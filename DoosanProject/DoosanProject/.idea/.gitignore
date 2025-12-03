@@ -1,0 +1,27 @@
+# Ignore everything by default
+/*
+
+# Keep this .gitignore
+!.gitignore
+
+# Allow the exact config file
+!config.json
+
+# Allow the five code files (catch both exact names and common extensions)
+!doosan_GUI
+!doosan_GUI.*
+!doosan_reciever_code
+!doosan_reciever_code.*
+!doosan_sequence
+!doosan_sequence.*
+
+# Allow the download image (with and without space, with extensions)
+!download_image
+!download_image.*
+!download\ image
+!download\ image.*
+
+# If any of the allowed files live in subdirectories, unignore their parent dirs explicitly.
+# Example (uncomment and adjust if needed):
+# !path/to/
+# !path/to/config.json
