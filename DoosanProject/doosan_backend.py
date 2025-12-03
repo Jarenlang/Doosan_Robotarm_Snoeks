@@ -239,7 +239,7 @@ class DoosanGatewayClient:
         timeout in seconden; None = onbeperkt wachten.
         Deze is bedoeld voor gebruik in sequenties.
         testregel voor github met een update
-        hier nog een testregel
+        hier nog een testregel test test
         test regel voor de gene wie zijn github niet werkt
         """
         import time
