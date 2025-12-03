@@ -238,7 +238,7 @@ class DoosanGatewayClient:
         Blokkeer tot check_motion 0 teruggeeft (robot stil).
         timeout in seconden; None = onbeperkt wachten.
         Deze is bedoeld voor gebruik in sequenties.
-        testregel voor github
+        testregel voor github met een update
         hier nog een testregel
         """
         import time
