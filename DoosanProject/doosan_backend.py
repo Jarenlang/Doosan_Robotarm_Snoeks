@@ -240,6 +240,7 @@ class DoosanGatewayClient:
         Deze is bedoeld voor gebruik in sequenties.
         testregel voor github met een update
         hier nog een testregel
+        je github zou maar niet werken
         """
         import time
 
