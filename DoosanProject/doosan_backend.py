@@ -7,7 +7,6 @@ CONFIG_FILE = "config.json"
 
 def load_config():
     if not os.path.exists(CONFIG_FILE):
-        # defaults als config nog niet bestaat
         return {
             "robot_ip": "192.168.137.50",
             "port": 56666,
@@ -28,52 +27,46 @@ def save_config(cfg: dict):
         json.dump(cfg, f, indent=2)
 
 
-# Laad globale config
 _config = load_config()
 ROBOT_IP = _config.get("robot_ip")
 PORT = _config.get("port")
 
 class DoosanGatewayClient:
-    def __init__(self, ip: str | None = None, port: int | None = None):
-        if port is None:
-            port = PORT
-        if ip is None:
-            ip = ROBOT_IP
-
-        self.ip: str = ip
-        self.port: int = port
-        self.sock: socket.socket | None = None
+    def __init__(self, ip=None, port=None):
+        self.ip = ip or ROBOT_IP
+        self.port = port or PORT
+        self.sock = None
         self.lock = threading.Lock()
 
-        # --- status-poller extra's ---
         self._status_lock = threading.Lock()
-        self._last_status: str | None = None
-        self._poll_thread: threading.Thread | None = None
+        self._last_status = None
+        self._poll_thread = None
         self._poll_stop = threading.Event()
-        self._poll_error_reported = False  # alleen eerste fout loggen
+        self._poll_error_reported = False
 
-    # ---------------- Basis socket-API ---------------- #
+    # --------------------------------------------------------
+    # Socket laag
+    # --------------------------------------------------------
 
-    def connect(self) -> None:
+    def connect(self):
         if self.sock:
             return
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((self.ip, self.port))
         self.sock = s
 
-    def close(self) -> None:
-        # eerst poller stoppen
+    def close(self):
         self.stop_status_poller()
         with self.lock:
             if self.sock:
                 try:
                     self.send_raw("quit\n", expect_response=False)
-                except Exception:
+                except:
                     pass
                 self.sock.close()
                 self.sock = None
 
-    def send_raw(self, msg: str, expect_response: bool = True) -> str | None:
+    def send_raw(self, msg: str, expect_response=True):
         with self.lock:
             if not self.sock:
                 raise RuntimeError("Not connected to robot")
@@ -85,171 +78,118 @@ class DoosanGatewayClient:
 
                 data = self.sock.recv(4096)
                 if not data:
-                    # lege read = verbinding verbroken
                     raise ConnectionError("Robot connection closed")
 
                 return data.decode("ascii", errors="ignore")
 
             except Exception as e:
-                # bij elke fout: socket ongeldig maken, zodat de GUI dit ziet
                 try:
                     if self.sock:
                         self.sock.close()
-                except Exception:
+                except:
                     pass
                 self.sock = None
                 raise e
 
-    # ---------------- High-level helpers ---------------- #
+    # --------------------------------------------------------
+    # Motion
+    # --------------------------------------------------------
 
     def amovel(self, x, y, z, rx, ry, rz, vel, acc):
-        cmd = f"amovel {x} {y} {z} {rx} {ry} {rz} {vel} {acc}\n"
-        return self.send_raw(cmd)
+        return self.send_raw(f"amovel {x} {y} {z} {rx} {ry} {rz} {vel} {acc}\n")
 
     def amovejx(self, x, y, z, rx, ry, rz, vel, acc):
-        cmd = f"amovejx {x} {y} {z} {rx} {ry} {rz} {vel} {acc}\n"
-        return self.send_raw(cmd)
+        return self.send_raw(f"amovejx {x} {y} {z} {rx} {ry} {rz} {vel} {acc}\n")
 
     def stop(self):
         return self.send_raw("stop\n")
 
-    def change_operation_speed(self, speed: int | float):
-        return self.send_raw(f"change_operation_speed {speed}\n")
+    def change_operation_speed(self, s):
+        return self.send_raw(f"change_operation_speed {s}\n")
 
-    def set_velx(self, vel: int | float):
-        return self.send_raw(f"set_velx {vel}\n")
+    def set_velx(self, v):
+        return self.send_raw(f"set_velx {v}\n")
 
-    def set_accx(self, acc: int | float):
-        return self.send_raw(f"set_accx {acc}\n")
+    def set_accx(self, a):
+        return self.send_raw(f"set_accx {a}\n")
 
-    # ---------------- Digital / analog IO helpers ---------------- #
+    # --------------------------------------------------------
+    # I/O
+    # --------------------------------------------------------
 
-    def set_digital_output(self, index: int, value: int):
-        """
-        Zet een digitale uitgang (0/1).
-        """
-        cmd = f"digout {index} {int(value)}\n"
-        return self.send_raw(cmd)
+    def set_digital_output(self, i, v):
+        return self.send_raw(f"digout {i} {int(v)}\n")
 
-    def get_digital_input(self, index: int) -> int:
-        """
-        Lees een digitale ingang (0/1). Retourneert 0 of 1.
-        """
-        resp = self.send_raw(f"digin {index}\n")
-        if not resp:
-            raise RuntimeError("Empty response from digin")
-
+    def get_digital_input(self, i):
+        resp = self.send_raw(f"digin {i}\n")
         parts = resp.strip().split()
-
-        # verwacht: "OK digin <0/1>"
-        if len(parts) >= 3 and parts[0].upper() == "OK":
-            try:
-                return int(parts[2])
-            except ValueError:
-                raise RuntimeError(f"Unexpected digin payload: {parts[2]!r} in {resp!r}")
-
-        # alles wat geen 'OK ...' is, behandelen als fout van de robot
-        raise RuntimeError(f"digin error response: {resp!r}")
-
-    def set_analog_output(self, ch: int, value: float):
-        """
-        Zet een analoge uitgang. Schaal/units afhankelijk van je hardware-config.
-        """
-        cmd = f"anout {ch} {value}\n"
-        return self.send_raw(cmd)
-
-    def get_analog_input(self, ch: int) -> float:
-        """
-        Lees een analoge ingang. Retourneert float.
-        """
-        resp = self.send_raw(f"anin {ch}\n")
-        if not resp:
-            raise RuntimeError("Empty response from anin")
-        parts = resp.strip().split()
-        # verwacht: "OK anin <value>"
         if len(parts) >= 3:
-            return float(parts[2])
-        raise RuntimeError(f"Unexpected anin response: {resp!r}")
-
-    # ---------------- check_motion helpers ---------------- #
-
-    @staticmethod
-    def _parse_check_motion_resp(resp: str) -> int | None:
-        """
-        Parseer een antwoordregel van 'check_motion'.
-        Verwacht iets als: 'OK check_motion 0' of 'OK check_motion 1'.
-        Retourneert 0 of 1, of None als het niet te parsen is.
-        """
-        if not resp:
-            return None
-        parts = resp.strip().split()
-        if len(parts) < 3:
-            return None
-        try:
             return int(parts[2])
-        except ValueError:
-            return None
+        raise RuntimeError("Bad digin response")
 
-    # ---------------- Status-poller API ---------------- #
+    # --------------------------------------------------------
+    # Status poller
+    # --------------------------------------------------------
 
-    def start_status_poller(self, interval: float = 0.1) -> None:
-        """
-        Start een achtergrondthread die periodiek 'check_motion' naar de robot stuurt
-        en het ruwe antwoord bewaart in _last_status.
-        Deze is vooral bedoeld voor de GUI.
-        """
+    def start_status_poller(self, interval=0.2):
         if self._poll_thread and self._poll_thread.is_alive():
             return
 
         self._poll_stop.clear()
         self._poll_error_reported = False
 
-        def _poll():
+        def loop():
             while not self._poll_stop.is_set():
                 try:
                     resp = self.send_raw("check_motion\n")
-                    if resp is not None:
+                    if resp:
                         with self._status_lock:
                             self._last_status = resp.strip()
                 except Exception as e:
-                    # Alleen eerste fout loggen om spam te voorkomen
                     if not self._poll_error_reported:
-                        print(f"Exception while polling check_motion: {e}")
+                        print("Poll error:", e)
                         self._poll_error_reported = True
                 self._poll_stop.wait(interval)
 
-        self._poll_thread = threading.Thread(target=_poll, daemon=True)
+        self._poll_thread = threading.Thread(target=loop, daemon=True)
         self._poll_thread.start()
 
-    def stop_status_poller(self) -> None:
+    def stop_status_poller(self):
         self._poll_stop.set()
-        if self._poll_thread and self._poll_thread.is_alive():
-            self._poll_thread.join(timeout=1.0)
+        if self._poll_thread:
+            self._poll_thread.join(timeout=1)
 
-    def get_last_status(self) -> str | None:
-        """Laatste rauwe antwoord van 'check_motion' (bijv. 'OK check_motion 0')."""
+    def get_last_status(self):
         with self._status_lock:
             return self._last_status
 
-    # ---------------- Blokkerend wachten op stilstand ----------------
+    # --------------------------------------------------------
+    # Blocking wait
+    # --------------------------------------------------------
 
-    def wait_until_stopped(self, poll_interval: float = 0.1, timeout: float | None = None) -> None:
-        """
-        Blokkeer tot check_motion 0 teruggeeft (robot stil).
-        timeout in seconden; None = onbeperkt wachten.
-        Deze is bedoeld voor gebruik in sequenties.
+    @staticmethod
+    def _parse_check_motion_resp(resp):
+        try:
+            parts = resp.split()
+            return int(parts[2])
+        except:
+            return None
 
-        """
+    def wait_until_stopped(self, poll=0.1, timeout=None):
         import time
-
-        start = time.time()
+        t0 = time.time()
         while True:
-            resp = self.send_raw("check_motion\n")
-            moving = self._parse_check_motion_resp(resp or "")
-            if moving == 0:
-                return  # robot is stil
+            r = self.send_raw("check_motion\n")
+            m = self._parse_check_motion_resp(r)
+            if m == 0:
+                return
+            if timeout and time.time() - t0 > timeout:
+                raise TimeoutError("Robot did not stop in time")
+            time.sleep(poll)
 
-            if timeout is not None and (time.time() - start) > timeout:
-                raise TimeoutError("Robot still moving after wait_until_stopped timeout")
+    # --------------------------------------------------------
+    # QR integratie
+    # --------------------------------------------------------
 
-            time.sleep(poll_interval)
+    def run_qr_sequence(self, program, code, callback=None):
+        return program.sequence_from_qr(code, callback)

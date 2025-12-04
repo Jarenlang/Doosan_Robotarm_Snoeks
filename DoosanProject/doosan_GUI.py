@@ -1,4 +1,4 @@
-# doosan_gui.py
+# doosan_GUI.py  — deel 1/3
 
 import threading
 import tkinter as tk
@@ -6,6 +6,9 @@ from tkinter import ttk, messagebox
 
 from doosan_backend import (DoosanGatewayClient, ROBOT_IP, PORT, load_config)
 from doosan_sequence import RobotProgram
+
+# QR scanner import (zorg dat qr_scanner.py in dezelfde map staat)
+from qr_scanner import scan_qr
 
 SNOEKS_RED = "#c90000"
 SNOEKS_DARK = "#111111"
@@ -54,11 +57,9 @@ class RobotGUI:
 
         try:
             icon_img = tk.PhotoImage(file="download.png")
-            # referentie bewaren, anders wordt het plaatje door de garbage collector opgeruimd
             self._icon_img = icon_img
             self.root.iconphoto(False, icon_img)
         except Exception as e:
-            # als het bestand ontbreekt of niet leesbaar is, gewoon standaard-icoon gebruiken
             print(f"Kon window-icoon niet laden: {e}")
 
         # backend
@@ -159,18 +160,40 @@ class RobotGUI:
             style="Snoeks.TLabel",
         )
         self.seq_state_label.pack()
+        # ---------------------------
+        # QR-SCAN KNOP
+        # ---------------------------
+        self.btn_scanqr = ttk.Button(
+            ctrl_frame,
+            text="Scan QR",
+            command=self.on_scan_qr,
+            style="SnoeksPrimary.TButton",
+        )
+        self.btn_scanqr.grid(row=1, column=0, pady=(10, 0))
 
-        # IO (Digital I/O)
+        # ---------------------------
+        # OPERATOR-KNOP (voor code 2)
+        # ---------------------------
+        self.btn_continue = ttk.Button(
+            ctrl_frame,
+            text="Operator klaar",
+            command=self.on_operator_continue,
+            state="disabled",
+            style="Snoeks.TButton",
+        )
+        self.btn_continue.grid(row=1, column=1, pady=(10, 0))
+
+        # Digital IO frame
         io_frame = ttk.LabelFrame(root, text="Digital IO", padding=10, style="Snoeks.TLabelframe")
         io_frame.pack(fill="x", padx=10, pady=5)
 
-        self.num_do = 16  # DO0..DO15
-        self.num_di = 16  # DI0..DI15
+        self.num_do = 16
+        self.num_di = 16
 
         ttk.Label(io_frame, text="Outputs (DO)", style="Snoeks.TLabel").grid(row=0, column=0, sticky="w")
         ttk.Label(io_frame, text="Inputs (DI)", style="Snoeks.TLabel").grid(row=2, column=0, sticky="w")
 
-        # DO: checkboxen om outputs te zetten
+        # DO
         self.do_vars = []
         for i in range(1, self.num_do + 1):
             var = tk.IntVar(value=0)
@@ -179,20 +202,19 @@ class RobotGUI:
                 text=str(i),
                 variable=var,
                 command=lambda idx=i, v=var: self._on_do_toggled(idx, v),
-                style="Snoeks.TCheckbutton" if "Snoeks.TCheckbutton" in ttk.Style().theme_names() else "TCheckbutton",
+                style="TCheckbutton",
             )
             cb.grid(row=1, column=1 + i, padx=2)
             self.do_vars.append(var)
 
-        # DI: labels die alleen status tonen
+        # DI
         self.di_labels = []
         for i in range(1, self.num_di + 1):
             lbl = ttk.Label(io_frame, text=f"{i}: ?", style="Snoeks.TLabel")
             lbl.grid(row=3, column=1 + i, padx=2)
             self.di_labels.append(lbl)
 
-
-        # Status
+        # Status venster
         status_frame = ttk.LabelFrame(root, text="Status", padding=10, style="Snoeks.TLabelframe")
         status_frame.pack(fill="both", expand=True, padx=10, pady=5)
 
@@ -208,9 +230,12 @@ class RobotGUI:
 
         self.append_status("Klaar. Verbind met de robot.")
         self.root.protocol("WM_DELETE_WINDOW", self.on_exit)
+
         self._update_status_from_robot()
 
-    # ---------- Helpers / callbacks ----------
+    # -------------------------------------------------------------------
+    # STATUS UPDATE & LOGGING
+    # -------------------------------------------------------------------
 
     def append_status(self, msg: str):
         self.status_text.config(state="normal")
@@ -218,15 +243,11 @@ class RobotGUI:
         self.status_text.see("end")
         self.status_text.config(state="disabled")
 
-        # korte sequence state updaten (laatste bericht)
-        if hasattr(self, "seq_state_var"):
-            self.seq_state_var.set(msg)
+        self.seq_state_var.set(msg)
 
     def _set_seq_state(self, text: str | None):
-        """Toon of verberg het opvallende sequence-state vakje."""
         if text:
             self.seq_state_var.set(text)
-            # alleen gridden als hij nog niet zichtbaar is
             if not self.seq_state_frame.winfo_ismapped():
                 self.seq_state_frame.grid(row=0, column=4, padx=(20, 5), sticky="w")
         else:
@@ -234,23 +255,24 @@ class RobotGUI:
             if self.seq_state_frame.winfo_ismapped():
                 self.seq_state_frame.grid_remove()
 
+    # -------------------------------------------------------------------
+    # VERBINDINGSBEHEER
+    # -------------------------------------------------------------------
+
     def _set_disconnected_state(self, reason: str | None = None):
-        """Zet de GUI terug in de 'niet verbonden' staat."""
         if reason:
             self.append_status(f"Verbinding verbroken: {reason}")
         else:
             self.append_status("Verbinding verbroken.")
 
-        # knoppen resetten
         self.btn_start.config(state="disabled")
         self.btn_stop.config(state="disabled")
         self.btn_home.config(state="disabled")
         self.btn_connect.config(state="normal")
 
-        # backend afsluiten en nieuwe client maken
         try:
             self.gw.close()
-        except Exception:
+        except:
             pass
 
         self.gw = DoosanGatewayClient()
@@ -262,19 +284,16 @@ class RobotGUI:
     def _is_connection_lost_error(self, e: Exception) -> bool:
         msg = str(e)
         return (
-                "Not connected to robot" in msg
-                or "Robot connection closed" in msg
+            "Not connected to robot" in msg
+            or "Robot connection closed" in msg
         )
 
     def on_connect(self):
-        """Start asynchrone connect met countdown-popup van 5s."""
-        # knop NIET vooraf disablen; alleen kort blokkeren tegen dubbelklikken
         self.btn_connect.config(state="disabled")
 
         ip = self.ip_var.get().strip()
         self.gw.ip = ip
 
-        # connect in achtergrondthread
         def do_connect():
             ok = False
             err = None
@@ -286,7 +305,6 @@ class RobotGUI:
 
             def finish():
                 if ok:
-                    # alleen hier knop uitzetten, want connect is gelukt
                     try:
                         self.gw.start_status_poller(interval=0.2)
                         self.append_status(f"Verbonden met {self.gw.ip}:{PORT}")
@@ -299,18 +317,18 @@ class RobotGUI:
                         messagebox.showerror("Connect error", str(e2))
                         self.btn_connect.config(state="normal")
                 else:
-                    # bij mislukte verbinding knop weer AAN
                     messagebox.showerror("Connect error", str(err))
                     self.btn_connect.config(state="normal")
 
             self.root.after(0, finish)
 
-        t = threading.Thread(target=do_connect, daemon=True)
-        t.start()
+        threading.Thread(target=do_connect, daemon=True).start()
+
+    # -------------------------------------------------------------------
+    # STATUS POLLER
+    # -------------------------------------------------------------------
 
     def _update_status_from_robot(self):
-        """Start een achtergrondthread die periodiek DI + status ophaalt."""
-        # voorkom dat er meerdere threads tegelijk draaien
         if hasattr(self, "_io_thread") and self._io_thread and self._io_thread.is_alive():
             return
 
@@ -319,18 +337,15 @@ class RobotGUI:
         def io_loop():
             while not self._io_stop.is_set():
                 try:
-                    # tekstuele status (check_motion) komt uit backend-poller;
-                    # hier alleen doorzetten naar GUI als die verandert
                     status = self.gw.get_last_status()
                     if status and status != self._last_gui_status:
                         self._last_gui_status = status
 
                         def upd_status():
                             self.append_status(f"Robotstatus: {status}")
-
                         self.root.after(0, upd_status)
 
-                    # digitale inputs uitlezen
+                    # digitale inputs
                     if self.gw.sock is not None:
                         di_values = {}
                         for i in range(1, self.num_di + 1):
@@ -344,45 +359,39 @@ class RobotGUI:
 
                                     def log_err(i=i, e_io=e_io):
                                         self.append_status(f"DI{i} leesfout: {e_io}")
-
                                     self.root.after(0, log_err)
 
-                                # als de backend zegt dat er geen verbinding is, GUI resetten
                                 if self._is_connection_lost_error(e_io):
                                     def disc():
                                         self._set_disconnected_state(str(e_io))
-
                                     self.root.after(0, disc)
                                     break
 
-                        # labels updaten op GUI-thread
                         def upd_labels():
                             for i, v in di_values.items():
                                 self.di_labels[i - 1].config(text=f"{i}: {v}")
-
                         self.root.after(0, upd_labels)
 
                 except Exception as e:
-                    # algemene poll-fout: ook maar één keer loggen
                     def log_exc():
                         self.append_status(f"Statuspoll fout: {e}")
                     self.root.after(0, log_exc)
 
-                # pauze tussen polls – hier bv. 1 seconde
                 self._io_stop.wait(1.0)
 
         self._io_thread = threading.Thread(target=io_loop, daemon=True)
         self._io_thread.start()
+    # -------------------------------------------------------------------
+    # PARAMETERS APPLY
+    # -------------------------------------------------------------------
 
     def on_apply_params(self):
-        """Lees velden uit de GUI en stuur ze in één keer naar robot + config."""
         try:
             self.program.operation_speed = self.var_op_speed.get()
             self.program.velx = self.var_velx.get()
             self.program.accx = self.var_accx.get()
             self.gw.ip = self.ip_var.get().strip()
 
-            # alleen naar robot sturen als er al een connectie is
             if self.gw.sock is not None:
                 self.program.apply_parameters()
 
@@ -390,6 +399,10 @@ class RobotGUI:
             self.append_status("Parameters toegepast en opgeslagen.")
         except Exception as e:
             messagebox.showerror("Param error", str(e))
+
+    # -------------------------------------------------------------------
+    # MANUELE SEQUENCE (oude start sequence)
+    # -------------------------------------------------------------------
 
     def on_start_sequence(self):
         if self.sequence_thread and self.sequence_thread.is_alive():
@@ -412,6 +425,10 @@ class RobotGUI:
         self.sequence_thread = threading.Thread(target=run_seq, daemon=True)
         self.sequence_thread.start()
 
+    # -------------------------------------------------------------------
+    # STOP BUTTON
+    # -------------------------------------------------------------------
+
     def on_stop(self):
         try:
             self.append_status("Stop aangevraagd.")
@@ -421,8 +438,9 @@ class RobotGUI:
             if self.gw.sock is None:
                 self._set_disconnected_state(str(e))
 
-    def on_exit(self):
-        self.root.destroy()
+    # -------------------------------------------------------------------
+    # HOME BUTTON
+    # -------------------------------------------------------------------
 
     def on_home(self):
         try:
@@ -436,6 +454,54 @@ class RobotGUI:
             if self._is_connection_lost_error(e):
                 self._set_disconnected_state(str(e))
 
+    # -------------------------------------------------------------------
+    # QR SEQUENCE START
+    # -------------------------------------------------------------------
+
+    def on_scan_qr(self):
+        if self.sequence_thread and self.sequence_thread.is_alive():
+            messagebox.showinfo("Info", "Sequence is al bezig.")
+            return
+
+        self.append_status("QR scanning gestart...")
+
+        code = scan_qr()
+        self.append_status(f"QR-resultaat: {code}")
+
+        if code is None:
+            self.append_status("QR niet gevonden in database.")
+            return
+
+        def run_qr():
+            result = self.gw.run_qr_sequence(self.program, code, self.append_status)
+
+            if result == "WAIT_OPERATOR":
+                self.append_status("Wachten op operator…")
+                self.btn_continue.config(state="normal")
+            else:
+                self.append_status("QR sequence klaar.")
+
+        self.sequence_thread = threading.Thread(target=run_qr, daemon=True)
+        self.sequence_thread.start()
+
+    # -------------------------------------------------------------------
+    # OPERATOR "KLAAR" KNOP (voor QR code = 2)
+    # -------------------------------------------------------------------
+
+    def on_operator_continue(self):
+        self.btn_continue.config(state="disabled")
+
+        def run_arm():
+            self.program.sequence_armsteunen(self.append_status)
+            self.append_status("Armsteunen klaar.")
+
+        self.sequence_thread = threading.Thread(target=run_arm, daemon=True)
+        self.sequence_thread.start()
+
+    # -------------------------------------------------------------------
+    # DIGITAL OUTPUT CLICK
+    # -------------------------------------------------------------------
+
     def _on_do_toggled(self, index: int, var: tk.IntVar):
         val = var.get()
         try:
@@ -443,12 +509,24 @@ class RobotGUI:
                 self.append_status("Kan DO niet zetten: niet verbonden.")
                 var.set(0)
                 return
-            self.gw.set_digital_output(index, val)  # index = 1..16
+            self.gw.set_digital_output(index, val)
             self.append_status(f"DO{index} => {val}")
         except Exception as e:
             self.append_status(f"DO{index} fout: {e}")
             if self._is_connection_lost_error(e):
                 self._set_disconnected_state(str(e))
+
+    # -------------------------------------------------------------------
+    # EXIT
+    # -------------------------------------------------------------------
+
+    def on_exit(self):
+        try:
+            self._io_stop.set()
+        except:
+            pass
+        self.root.destroy()
+
 
 if __name__ == "__main__":
     root = tk.Tk()
