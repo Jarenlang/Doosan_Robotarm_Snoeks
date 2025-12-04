@@ -2,7 +2,7 @@ from doosan_backend import load_config, DoosanGatewayClient, save_config
 """
 doosan_sequence.py
 
-test voor github
+
 
  functies voor het maken van een sequence:
 
