@@ -62,8 +62,8 @@ class RobotGUI:
             print(f"Kon window-icoon niet laden: {e}")
 
         # backend
-        self.gw = DoosanGatewayClient()
-        self.program = RobotProgram(self.gw)
+        self.gateway = DoosanGatewayClient()
+        self.program = RobotProgram(self.gateway)
         self.sequence_thread = None
 
         self._io_thread = None
@@ -249,12 +249,12 @@ class RobotGUI:
 
         # backend afsluiten en nieuwe client maken
         try:
-            self.gw.close()
+            self.gateway.close()
         except Exception:
             pass
 
-        self.gw = DoosanGatewayClient()
-        self.program = RobotProgram(self.gw)
+        self.gateway = DoosanGatewayClient()
+        self.program = RobotProgram(self.gateway)
 
         self.append_status("Klaar. Verbind opnieuw met de robot.")
         self._set_seq_state(None)
@@ -272,14 +272,14 @@ class RobotGUI:
         self.btn_connect.config(state="disabled")
 
         ip = self.ip_var.get().strip()
-        self.gw.ip = ip
+        self.gateway.ip = ip
 
         # connect in achtergrondthread
         def do_connect():
             ok = False
             err = None
             try:
-                self.gw.connect()
+                self.gateway.connect()
                 ok = True
             except Exception as e:
                 err = e
@@ -288,8 +288,8 @@ class RobotGUI:
                 if ok:
                     # alleen hier knop uitzetten, want connect is gelukt
                     try:
-                        self.gw.start_status_poller(interval=0.2)
-                        self.append_status(f"Verbonden met {self.gw.ip}:{PORT}")
+                        self.gateway.start_status_poller(interval=0.2)
+                        self.append_status(f"Verbonden met {self.gateway.ip}:{PORT}")
                         self.btn_start.config(state="normal")
                         self.btn_stop.config(state="normal")
                         self.btn_home.config(state="normal")
@@ -321,7 +321,7 @@ class RobotGUI:
                 try:
                     # tekstuele status (check_motion) komt uit backend-poller;
                     # hier alleen doorzetten naar GUI als die verandert
-                    status = self.gw.get_last_status()
+                    status = self.gateway.get_last_status()
                     if status and status != self._last_gui_status:
                         self._last_gui_status = status
 
@@ -331,11 +331,11 @@ class RobotGUI:
                         self.root.after(0, upd_status)
 
                     # digitale inputs uitlezen
-                    if self.gw.sock is not None:
+                    if self.gateway.sock is not None:
                         di_values = {}
                         for i in range(1, self.num_di + 1):
                             try:
-                                v = self.gw.get_digital_input(i)
+                                v = self.gateway.get_digital_input(i)
                                 di_values[i] = v
                             except Exception as e_io:
                                 di_values[i] = "?"
@@ -380,10 +380,10 @@ class RobotGUI:
             self.program.operation_speed = self.var_op_speed.get()
             self.program.velx = self.var_velx.get()
             self.program.accx = self.var_accx.get()
-            self.gw.ip = self.ip_var.get().strip()
+            self.gateway.ip = self.ip_var.get().strip()
 
             # alleen naar robot sturen als er al een connectie is
-            if self.gw.sock is not None:
+            if self.gateway.sock is not None:
                 self.program.apply_parameters()
 
             self.program.save_parameters_to_config()
@@ -418,7 +418,7 @@ class RobotGUI:
             self.program.request_stop()
         except Exception as e:
             self.append_status(f"Stop fout: {e}")
-            if self.gw.sock is None:
+            if self.gateway.sock is None:
                 self._set_disconnected_state(str(e))
 
     def on_exit(self):
@@ -428,8 +428,8 @@ class RobotGUI:
         try:
             self.program.apply_parameters()
             self.append_status("Home-beweging gestart...")
-            self.gw.amovel(*self.program.p_home, self.program.velx, self.program.accx)
-            self.gw.wait_until_stopped()
+            self.gateway.amovel(*self.program.p_home, self.program.velx, self.program.accx)
+            self.gateway.wait_until_stopped()
             self.append_status("Home-beweging klaar.")
         except Exception as e:
             self.append_status(f"Home fout: {e}")
@@ -439,11 +439,11 @@ class RobotGUI:
     def _on_do_toggled(self, index: int, var: tk.IntVar):
         val = var.get()
         try:
-            if self.gw.sock is None:
+            if self.gateway.sock is None:
                 self.append_status("Kan DO niet zetten: niet verbonden.")
                 var.set(0)
                 return
-            self.gw.set_digital_output(index, val)  # index = 1..16
+            self.gateway.set_digital_output(index, val)  # index = 1..16
             self.append_status(f"DO{index} => {val}")
         except Exception as e:
             self.append_status(f"DO{index} fout: {e}")

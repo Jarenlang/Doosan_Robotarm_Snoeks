@@ -176,7 +176,7 @@ class DoosanGatewayClient:
     LAMP_DO_READY = _config.get("LAMP_DO_READY")
     LAMP_DO_MOVE = _config.get("LAMP_DO_MOVE")  # DO2
 
-    def _set_lamp(self, ready: bool, moving: bool):
+    def set_lamp(self, ready: bool, moving: bool):
         """
         Zorgt dat precies één stand actief is:
         - ready=True  => DO1=1, DO2=0
@@ -191,14 +191,7 @@ class DoosanGatewayClient:
         elif moving:
             self.set_digital_output(self.LAMP_DO_MOVE + 1, 1)
 
-    def lamp_alles_uit(self):
-        self._set_lamp(False, False)
-
-    def lamp_ready(self):
-        self._set_lamp(True, False)
-
-    def lamp_moving(self):
-        self._set_lamp(False, True)
+    set_lamp(False, False)
 
     # ---------------- check_motion helpers ---------------- #
 
