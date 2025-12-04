@@ -2,7 +2,9 @@ from doosan_backend import load_config, DoosanGatewayClient, save_config
 """
 doosan_sequence.py
 
-Belangrijkste functies voor het maken van een sequence:
+test voor github
+
+ functies voor het maken van een sequence:
 
 - Beweging (TCP, async + wachten tot stilstand):
     self.gateway.amovel(x, y, z, rx, ry, rz, velx, accx)        Hiermee wordt de robot aangestuurd om naar de coordinaat tussen de haakjes te bewegen
