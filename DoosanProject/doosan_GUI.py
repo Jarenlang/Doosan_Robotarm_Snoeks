@@ -7,10 +7,11 @@ from tkinter import ttk, messagebox
 from doosan_backend import (DoosanGatewayClient, ROBOT_IP, PORT, load_config)
 from doosan_sequence import RobotProgram
 
-SNOEKS_RED = "#c90000"
-SNOEKS_DARK = "#111111"
-SNOEKS_DARK2 = "#2c2c2c"
-SNOEKS_TEXT = "#000000"
+cfg = load_config()
+Snoeks_Red = cfg.get("Snoeks_Red")
+Snoeks_Dark = cfg.get("Snoeks_Dark")
+Snoeks_Dark2 = cfg.get("Snoeks_Dark2")
+Snoeks_Text = cfg.get("Snoeks_Text")
 
 def setup_snoeks_style(root):
     style = ttk.Style(root)
@@ -21,30 +22,30 @@ def setup_snoeks_style(root):
         pass
 
     # hoofdachtergrond
-    root.configure(bg=SNOEKS_DARK)
+    root.configure(bg=Snoeks_Dark)
 
     # algemene defaults voor ttk (zodat witte vlakken verdwijnen)
-    style.configure(".", background=SNOEKS_DARK2, foreground=SNOEKS_TEXT)
+    style.configure(".", background=Snoeks_Dark2, foreground=Snoeks_Text)
 
     # Frames
-    style.configure("Snoeks.TFrame", background=SNOEKS_DARK2)
+    style.configure("Snoeks.TFrame", background=Snoeks_Dark2)
 
-    style.configure("Snoeks.TLabelframe", background=SNOEKS_DARK2, foreground=SNOEKS_TEXT)
+    style.configure("Snoeks.TLabelframe", background=Snoeks_Dark2, foreground=Snoeks_Text)
 
-    style.configure("Snoeks.TLabelframe.Label", background=SNOEKS_DARK2, foreground=SNOEKS_TEXT)
+    style.configure("Snoeks.TLabelframe.Label", background=Snoeks_Dark2, foreground=Snoeks_Text)
 
     # Labels
-    style.configure("Snoeks.TLabel", background=SNOEKS_DARK2, foreground=SNOEKS_TEXT)
+    style.configure("Snoeks.TLabel", background=Snoeks_Dark2, foreground=Snoeks_Text)
 
     # Buttons
-    style.configure("Snoeks.TButton", background=SNOEKS_RED, foreground="white", padding=5, relief="flat")
+    style.configure("Snoeks.TButton", background=Snoeks_Red, foreground="white", padding=5, relief="flat")
     style.map("Snoeks.TButton", background=[("active", "#e00000"), ("disabled", "#555555")], foreground=[("disabled", "#aaaaaa")])
 
-    style.configure("SnoeksPrimary.TButton", background=SNOEKS_RED, foreground="white", padding=6, relief="flat")
+    style.configure("SnoeksPrimary.TButton", background=Snoeks_Red, foreground="white", padding=6, relief="flat")
     style.map("SnoeksPrimary.TButton", background=[("active", "#e00000")])
 
     # Entry (donkere velden, lichte tekst)
-    style.configure("Snoeks.TEntry", fieldbackground=SNOEKS_DARK, foreground=SNOEKS_TEXT, background=SNOEKS_DARK2, bordercolor=SNOEKS_DARK)
+    style.configure("Snoeks.TEntry", fieldbackground=Snoeks_Dark, foreground=Snoeks_Text, background=Snoeks_Dark2, bordercolor=Snoeks_Dark)
 
 class RobotGUI:
     def __init__(self, root):
@@ -164,8 +165,8 @@ class RobotGUI:
         io_frame = ttk.LabelFrame(root, text="Digital IO", padding=10, style="Snoeks.TLabelframe")
         io_frame.pack(fill="x", padx=10, pady=5)
 
-        self.num_do = 16  # DO0..DO15
-        self.num_di = 16  # DI0..DI15
+        self.num_do = 16  # DO1..DO16
+        self.num_di = 16  # DI1..DI16
 
         ttk.Label(io_frame, text="Outputs (DO)", style="Snoeks.TLabel").grid(row=0, column=0, sticky="w")
         ttk.Label(io_frame, text="Inputs (DI)", style="Snoeks.TLabel").grid(row=2, column=0, sticky="w")
@@ -199,7 +200,7 @@ class RobotGUI:
         self.status_text = tk.Text(
             status_frame,
             height=10,
-            bg=SNOEKS_DARK,
+            bg=Snoeks_Dark,
             fg="white",
             insertbackground="white",
             relief="flat",
@@ -236,6 +237,7 @@ class RobotGUI:
 
     def _set_disconnected_state(self, reason: str | None = None):
         """Zet de GUI terug in de 'niet verbonden' staat."""
+        self.gateway.set_lamp(False, False)
         if reason:
             self.append_status(f"Verbinding verbroken: {reason}")
         else:
@@ -286,7 +288,6 @@ class RobotGUI:
 
             def finish():
                 if ok:
-                    # alleen hier knop uitzetten, want connect is gelukt
                     try:
                         self.gateway.start_status_poller(interval=0.2)
                         self.append_status(f"Verbonden met {self.gateway.ip}:{PORT}")
@@ -368,26 +369,24 @@ class RobotGUI:
                         self.append_status(f"Statuspoll fout: {e}")
                     self.root.after(0, log_exc)
 
-                # pauze tussen polls – hier bv. 1 seconde
-                self._io_stop.wait(1.0)
+                self._io_stop.wait(0.1)
 
         self._io_thread = threading.Thread(target=io_loop, daemon=True)
         self._io_thread.start()
 
     def on_apply_params(self):
-        """Lees velden uit de GUI en stuur ze in één keer naar robot + config."""
         try:
             self.program.operation_speed = self.var_op_speed.get()
             self.program.velx = self.var_velx.get()
             self.program.accx = self.var_accx.get()
             self.gateway.ip = self.ip_var.get().strip()
 
-            # alleen naar robot sturen als er al een connectie is
             if self.gateway.sock is not None:
                 self.program.apply_parameters()
 
             self.program.save_parameters_to_config()
             self.append_status("Parameters toegepast en opgeslagen.")
+
         except Exception as e:
             messagebox.showerror("Param error", str(e))
 
@@ -402,6 +401,7 @@ class RobotGUI:
                 self._set_seq_state("Sequence running")
                 self.program.sequence_pick_and_place(self.append_status)
                 self.append_status("Sequence klaar.")
+                self.gateway.set_lamp(True, False)
                 self._set_seq_state("Sequence done")
             except Exception as e:
                 self.append_status(f"Fout in sequence: {e}")
@@ -427,6 +427,7 @@ class RobotGUI:
     def on_home(self):
         try:
             self.program.apply_parameters()
+            self.gateway.set_lamp(False, True)
             self.append_status("Home-beweging gestart...")
             self.gateway.amovel(*self.program.p_home, self.program.velx, self.program.accx)
             self.gateway.wait_until_stopped()

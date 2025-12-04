@@ -29,5 +29,9 @@
     127,
     7.5,
     45
-  ]
+  ],
+  "Snoeks_Red": "#c90000",
+  "Snoeks_Dark": "#111111",
+  "Snoeks_Dark2": "#2c2c2c",
+  "Snoeks_Text": "#000000"
 }

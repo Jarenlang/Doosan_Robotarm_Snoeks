@@ -19,6 +19,10 @@ def load_config():
             "p_home": [-66, 850, 300, 3.14, 179.99, 163.55],
             "p_pick": [-585, -489, 771, 127, -151, 62],
             "p_place": [-585, -289, 571, 127, -151, 62],
+            "SNOEKS_RED": "#c90000",
+            "SNOEKS_DARK": "#111111",
+            "SNOEKS_DARK2": "#2c2c2c",
+            "SNOEKS_TEXT": "#000000"
         }
 
     with open(CONFIG_FILE, "r", encoding="utf-8") as f:
@@ -37,6 +41,7 @@ PORT = _config.get("port")
 
 class DoosanGatewayClient:
     def __init__(self, ip: str | None = None, port: int | None = None):
+        self.gateway = None
         if port is None:
             port = PORT
         if ip is None:
@@ -184,14 +189,14 @@ class DoosanGatewayClient:
         - allebei False => DO1=0, DO2=0
         """
         # eerst alles uit
-        self.set_digital_output(self.LAMP_DO_READY + 1, 0)  # +1 omdat robot DO's 1..16 zijn
-        self.set_digital_output(self.LAMP_DO_MOVE + 1, 0)
+        self.set_digital_output(self.LAMP_DO_READY, 0)  # +1 omdat robot DO's 1..16 zijn
+        self.set_digital_output(self.LAMP_DO_MOVE, 0)
         if ready:
-            self.set_digital_output(self.LAMP_DO_READY + 1, 1)
+            self.set_digital_output(self.LAMP_DO_READY, 1)
         elif moving:
-            self.set_digital_output(self.LAMP_DO_MOVE + 1, 1)
+            self.set_digital_output(self.LAMP_DO_MOVE, 1)
 
-    set_lamp(False, False)
+        self.gateway.set_lamp(False, False)
 
     # ---------------- check_motion helpers ---------------- #
 
