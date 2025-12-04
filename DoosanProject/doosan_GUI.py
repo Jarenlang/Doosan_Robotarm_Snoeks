@@ -1,11 +1,11 @@
-# doosan_gui.py
-
 import threading
 import tkinter as tk
 from tkinter import ttk, messagebox
 
+from qr_scanner import scan_qr_with_camera
 from doosan_backend import (DoosanGatewayClient, ROBOT_IP, PORT, load_config)
 from doosan_sequence import RobotProgram
+
 
 cfg = load_config()
 Snoeks_Red = cfg.get("Snoeks_Red")
@@ -340,6 +340,17 @@ class RobotGUI:
         if self.sequence_thread and self.sequence_thread.is_alive():
             messagebox.showinfo("Info", "Sequence is al bezig.")
             return
+
+        result = scan_qr_with_camera()
+        if result is None:
+            messagebox.showerror("QR-fout", "Geen geldige QR-code gevonden of niet in database.")
+            return
+
+        self.program.do_gordels = result in (1, 2)
+        self.program.do_armsteunen = result in (2, 3)
+        self.program.do_seatbelts = (result in (1, 2))
+
+        self.append_status(f"QR-code resultaat: {result} " f"(gordels={self.program.do_gordels}, " f"armsteunen={self.program.do_armsteunen})")
 
         def run_seq():
             try:
