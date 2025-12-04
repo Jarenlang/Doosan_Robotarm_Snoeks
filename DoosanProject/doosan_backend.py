@@ -236,7 +236,9 @@ class DoosanGatewayClient:
                             self._last_status = resp.strip()
                 except Exception as e:
                     # Alleen eerste fout loggen om spam te voorkomen
-                    print(f"Exception while polling check_motion: {e}")
+                    if not self._poll_error_reported:
+                        print(f"Exception while polling check_motion: {e}")
+                        self._poll_error_reported = True
                 self._poll_stop.wait(interval)
 
         self._poll_thread = threading.Thread(target=_poll, daemon=True)
