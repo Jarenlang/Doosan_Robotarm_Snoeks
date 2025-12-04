@@ -345,6 +345,7 @@ class RobotGUI:
             try:
                 self.append_status("Sequence start...")
                 self._set_seq_state("Sequence running")
+                self.gateway.set_lamp(False, True)
                 self.program.sequence_pick_and_place(self.append_status)
                 self.append_status("Sequence klaar.")
                 self.gateway.set_lamp(True, False)
@@ -378,6 +379,7 @@ class RobotGUI:
             self.gateway.amovel(*self.program.p_home, self.program.velx, self.program.accx)
             self.gateway.wait_until_stopped()
             self.append_status("Home-beweging klaar.")
+            self.gateway.set_lamp(True, False)
         except Exception as e:
             self.append_status(f"Home fout: {e}")
             if self._is_connection_lost_error(e):

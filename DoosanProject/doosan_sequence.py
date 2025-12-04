@@ -2,8 +2,6 @@ from doosan_backend import load_config, DoosanGatewayClient, save_config
 """
 doosan_sequence.py
 
-
-
  functies voor het maken van een sequence:
 
 - Beweging (TCP, async + wachten tot stilstand):
@@ -111,7 +109,6 @@ class RobotProgram:
 
         # 1) Naar home
         log("Naar home")
-        self.gateway.set_lamp(False, True)
         self.gateway.amovel(*self.p_home, self.velx, self.accx)
         self.gateway.wait_until_stopped()
         if self._stop_flag:
@@ -120,7 +117,6 @@ class RobotProgram:
 
         # 2) Naar pick
         log("Naar pick")
-        self.gateway.set_lamp(False, True)
         self.gateway.amovel(*self.p_pick, self.velx, self.accx)
         self.gateway.wait_until_stopped()
         if self._stop_flag:
@@ -129,7 +125,6 @@ class RobotProgram:
 
         # 3) Naar place
         log("Naar place")
-        self.gateway.set_lamp(False, True)
         self.gateway.amovel(*self.p_place, self.velx, self.accx)
         self.gateway.wait_until_stopped()
 
@@ -143,7 +138,6 @@ class RobotProgram:
 
         # 4) Naar pick
         log("Naar pick")
-        self.gateway.set_lamp(False, True)
         self.gateway.amovel(*self.p_pick, self.velx, self.accx)
         self.gateway.wait_until_stopped()
         if self._stop_flag:
@@ -152,7 +146,6 @@ class RobotProgram:
 
         # 5) Terug naar home
         log("Terug naar home")
-        self.gateway.set_lamp(False, True)
         self.gateway.amovel(*self.p_home, self.velx, self.accx)
         self.gateway.wait_until_stopped()
         self.set_do(1, 0)
