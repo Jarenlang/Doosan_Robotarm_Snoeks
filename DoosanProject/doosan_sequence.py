@@ -41,8 +41,7 @@ Belangrijkste functies voor het maken van een sequence:
         # hier je eigen stappen...
 """
 
-from doosan_backend import load_config, DoosanGatewayClient, save_config
-
+from doosan_backend import load_config, DoosanGatewayClient, save_config, lamp_alles_uit, lamp_ready, lamp_moving
 
 class RobotProgram:
     def __init__(self, gateway: DoosanGatewayClient):
@@ -116,6 +115,7 @@ class RobotProgram:
 
         # 1) Naar home
         log("Naar home")
+        self.
         self.gateway.amovel(*self.p_home, self.velx, self.accx)
         self.gateway.wait_until_stopped()
         if self._stop_flag:

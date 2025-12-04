@@ -11,6 +11,8 @@ def load_config():
         return {
             "robot_ip": "192.168.137.50",
             "port": 56666,
+            "LAMP_DO_READY": 1,
+            "LAMP_DO_MOVE": 2,
             "operation_speed": 50,
             "velx": 500,
             "accx": 300,
@@ -171,6 +173,33 @@ class DoosanGatewayClient:
             return float(parts[2])
         raise RuntimeError(f"Unexpected anin response: {resp!r}")
 
+    LAMP_DO_READY = _config.get("LAMP_DO_READY")
+    LAMP_DO_MOVE = _config.get("LAMP_DO_MOVE")  # DO2
+
+    def _set_lamp(self, ready: bool, moving: bool):
+        """
+        Zorgt dat precies één stand actief is:
+        - ready=True  => DO1=1, DO2=0
+        - moving=True => DO1=0, DO2=1
+        - allebei False => DO1=0, DO2=0
+        """
+        # eerst alles uit
+        self.set_digital_output(self.LAMP_DO_READY + 1, 0)  # +1 omdat robot DO's 1..16 zijn
+        self.set_digital_output(self.LAMP_DO_MOVE + 1, 0)
+        if ready:
+            self.set_digital_output(self.LAMP_DO_READY + 1, 1)
+        elif moving:
+            self.set_digital_output(self.LAMP_DO_MOVE + 1, 1)
+
+    def lamp_alles_uit(self):
+        self._set_lamp(False, False)
+
+    def lamp_ready(self):
+        self._set_lamp(True, False)
+
+    def lamp_moving(self):
+        self._set_lamp(False, True)
+
     # ---------------- check_motion helpers ---------------- #
 
     @staticmethod
@@ -253,3 +282,4 @@ class DoosanGatewayClient:
                 raise TimeoutError("Robot still moving after wait_until_stopped timeout")
 
             time.sleep(poll_interval)
+

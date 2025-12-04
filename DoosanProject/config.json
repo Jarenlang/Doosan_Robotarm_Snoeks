@@ -1,6 +1,8 @@
 {
   "robot_ip": "169.254.137.50",
   "port": 56666,
+  "LAMP_DO_READY": 1,
+  "LAMP_DO_MOVE": 2,
   "operation_speed": 100.0,
   "velx": 1900.0,
   "accx": 1500.0,
