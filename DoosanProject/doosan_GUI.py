@@ -55,14 +55,11 @@ class RobotGUI:
 
         try:
             icon_img = tk.PhotoImage(file="download.png")
-            # referentie bewaren, anders wordt het plaatje door de garbage collector opgeruimd
             self._icon_img = icon_img
             self.root.iconphoto(False, icon_img)
         except Exception as e:
-            # als het bestand ontbreekt of niet leesbaar is, gewoon standaard-icoon gebruiken
             print(f"Kon window-icoon niet laden: {e}")
 
-        # backend
         self.gateway = DoosanGatewayClient()
         self.program = RobotProgram(self.gateway)
         self.sequence_thread = None
@@ -70,14 +67,8 @@ class RobotGUI:
         self._io_thread = None
         self._io_stop = threading.Event()
         self._io_error_reported = set()
-
-        # status-delta logging
         self._last_gui_status: str | None = None
 
-        # debounce voor parameters
-        self._param_debounce_after_id: str | None = None
-
-        # config voor IP alvast laden
         cfg = load_config()
         default_ip = cfg.get("robot_ip", ROBOT_IP)
 
@@ -116,49 +107,22 @@ class RobotGUI:
         ctrl_frame = ttk.LabelFrame(root, text="Control", padding=10, style="Snoeks.TLabelframe")
         ctrl_frame.pack(fill="x", padx=10, pady=5)
 
-        self.btn_start = ttk.Button(
-            ctrl_frame,
-            text="Start sequence",
-            command=self.on_start_sequence,
-            state="disabled",
-            style="SnoeksPrimary.TButton",
-        )
+        self.btn_start = ttk.Button(ctrl_frame,text="Start sequence",command=self.on_start_sequence,state="disabled",style="SnoeksPrimary.TButton",)
         self.btn_start.grid(row=0, column=0, padx=5)
 
-        self.btn_stop = ttk.Button(
-            ctrl_frame,
-            text="Stop",
-            command=self.on_stop,
-            state="disabled",
-            style="Snoeks.TButton",
-        )
+        self.btn_stop = ttk.Button(ctrl_frame,text="Stop",command=self.on_stop,state="disabled",style="Snoeks.TButton",)
         self.btn_stop.grid(row=0, column=1, padx=5)
 
-        self.btn_home = ttk.Button(
-            ctrl_frame,
-            text="Home",
-            command=self.on_home,
-            state="disabled",
-            style="Snoeks.TButton",
-        )
+        self.btn_home = ttk.Button(ctrl_frame,text="Home",command=self.on_home,state="disabled",style="Snoeks.TButton",)
         self.btn_home.grid(row=0, column=2, padx=5)
 
-        self.btn_exit = ttk.Button(
-            ctrl_frame,
-            text="Exit",
-            command=self.on_exit,
-            style="Snoeks.TButton",
-        )
+        self.btn_exit = ttk.Button(ctrl_frame, text="Exit", command=self.on_exit, style="Snoeks.TButton",)
         self.btn_exit.grid(row=0, column=3, padx=5)
 
         # Opvallend sequence-state vakje
         self.seq_state_var = tk.StringVar(value="")
         self.seq_state_frame = ttk.Frame(ctrl_frame, padding=6, style="Snoeks.TFrame")
-        self.seq_state_label = ttk.Label(
-            self.seq_state_frame,
-            textvariable=self.seq_state_var,
-            style="Snoeks.TLabel",
-        )
+        self.seq_state_label = ttk.Label(self.seq_state_frame,textvariable=self.seq_state_var,style="Snoeks.TLabel",)
         self.seq_state_label.pack()
 
         # IO (Digital I/O)
@@ -175,13 +139,7 @@ class RobotGUI:
         self.do_vars = []
         for i in range(1, self.num_do + 1):
             var = tk.IntVar(value=0)
-            cb = ttk.Checkbutton(
-                io_frame,
-                text=str(i),
-                variable=var,
-                command=lambda idx=i, v=var: self._on_do_toggled(idx, v),
-                style="Snoeks.TCheckbutton" if "Snoeks.TCheckbutton" in ttk.Style().theme_names() else "TCheckbutton",
-            )
+            cb = ttk.Checkbutton( io_frame, text=str(i), variable=var, command=lambda idx=i, v=var: self._on_do_toggled(idx, v), style="Snoeks.TCheckbutton" if "Snoeks.TCheckbutton" in ttk.Style().theme_names() else "TCheckbutton")
             cb.grid(row=1, column=1 + i, padx=2)
             self.do_vars.append(var)
 
@@ -192,21 +150,12 @@ class RobotGUI:
             lbl.grid(row=3, column=1 + i, padx=2)
             self.di_labels.append(lbl)
 
-
         # Status
         status_frame = ttk.LabelFrame(root, text="Status", padding=10, style="Snoeks.TLabelframe")
         status_frame.pack(fill="both", expand=True, padx=10, pady=5)
 
-        self.status_text = tk.Text(
-            status_frame,
-            height=10,
-            bg=Snoeks_Dark,
-            fg="white",
-            insertbackground="white",
-            relief="flat",
-        )
+        self.status_text = tk.Text( status_frame, height=10, bg=Snoeks_Dark, fg="white", insertbackground="white", relief="flat")
         self.status_text.pack(fill="both", expand=True)
-
         self.append_status("Klaar. Verbind met de robot.")
         self.root.protocol("WM_DELETE_WINDOW", self.on_exit)
         self._update_status_from_robot()
@@ -269,14 +218,11 @@ class RobotGUI:
         )
 
     def on_connect(self):
-        """Start asynchrone connect met countdown-popup van 5s."""
-        # knop NIET vooraf disablen; alleen kort blokkeren tegen dubbelklikken
         self.btn_connect.config(state="disabled")
 
         ip = self.ip_var.get().strip()
         self.gateway.ip = ip
 
-        # connect in achtergrondthread
         def do_connect():
             ok = False
             err = None

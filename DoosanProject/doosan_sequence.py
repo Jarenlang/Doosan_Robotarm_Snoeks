@@ -1,3 +1,4 @@
+from doosan_backend import load_config, DoosanGatewayClient, save_config
 """
 doosan_sequence.py
 
@@ -41,25 +42,18 @@ Belangrijkste functies voor het maken van een sequence:
         # hier je eigen stappen...
 """
 
-from doosan_backend import load_config, DoosanGatewayClient, save_config
-
 class RobotProgram:
     def __init__(self, gateway: DoosanGatewayClient):
         self.gateway = gateway
-
-        # config laden
         self.config = load_config()
 
-        # parameters uit config
         self.operation_speed = self.config.get("operation_speed")
         self.velx = self.config.get("velx")
         self.accx = self.config.get("accx")
 
-        # posities (TCP pose [x, y, z, rx, ry, rz])
         self.p_home = self.config.get("p_home")
         self.p_pick = self.config.get("p_pick")
         self.p_place = self.config.get("p_place")
-
         self._stop_flag = False
 
     # ----------------- Basis helpers -----------------
@@ -88,10 +82,6 @@ class RobotProgram:
         self._stop_flag = True
         self.gateway.stop()
 
-    def reset_stop(self):
-        """Interne stop-vlag wissen voordat een nieuwe sequence start."""
-        self._stop_flag = False
-
     # ----------------- IO helpers (voor sequences) -----------------
 
     def set_do(self, index: int, value: int):
@@ -111,7 +101,11 @@ class RobotProgram:
             if status_callback:
                 status_callback(msg)
 
-        self.reset_stop()
+        self._stop_flag = False
+
+        """"
+        Begin hieronder met het coderen van de sequence-functie:
+        """
 
         # 1) Naar home
         log("Naar home")

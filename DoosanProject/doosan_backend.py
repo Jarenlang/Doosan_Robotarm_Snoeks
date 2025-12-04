@@ -220,11 +220,7 @@ class DoosanGatewayClient:
     # ---------------- Status-poller API ---------------- #
 
     def start_status_poller(self, interval: float = 0.1) -> None:
-        """
-        Start een achtergrondthread die periodiek 'check_motion' naar de robot stuurt
-        en het ruwe antwoord bewaart in _last_status.
-        Deze is vooral bedoeld voor de GUI.
-        """
+
         if self._poll_thread and self._poll_thread.is_alive():
             return
 
@@ -240,9 +236,7 @@ class DoosanGatewayClient:
                             self._last_status = resp.strip()
                 except Exception as e:
                     # Alleen eerste fout loggen om spam te voorkomen
-                    if not self._poll_error_reported:
-                        print(f"Exception while polling check_motion: {e}")
-                        self._poll_error_reported = True
+                    print(f"Exception while polling check_motion: {e}")
                 self._poll_stop.wait(interval)
 
         self._poll_thread = threading.Thread(target=_poll, daemon=True)
@@ -254,19 +248,10 @@ class DoosanGatewayClient:
             self._poll_thread.join(timeout=1.0)
 
     def get_last_status(self) -> str | None:
-        """Laatste rauwe antwoord van 'check_motion' (bijv. 'OK check_motion 0')."""
         with self._status_lock:
             return self._last_status
 
-    # ---------------- Blokkerend wachten op stilstand ----------------
-
     def wait_until_stopped(self, poll_interval: float = 0.1, timeout: float | None = None) -> None:
-        """
-        Blokkeer tot check_motion 0 teruggeeft (robot stil).
-        timeout in seconden; None = onbeperkt wachten.
-        Deze is bedoeld voor gebruik in sequenties.
-
-        """
         import time
 
         start = time.time()
@@ -274,7 +259,7 @@ class DoosanGatewayClient:
             resp = self.send_raw("check_motion\n")
             moving = self._parse_check_motion_resp(resp or "")
             if moving == 0:
-                return  # robot is stil
+                return  # robot staat stil
 
             if timeout is not None and (time.time() - start) > timeout:
                 raise TimeoutError("Robot still moving after wait_until_stopped timeout")
