@@ -1,4 +1,4 @@
-import threading
+
 import tkinter as tk
 from tkinter import ttk, messagebox
 
@@ -424,7 +424,7 @@ class RobotGUI:
 
     def _check_robot_enabled_or_warn(self) -> bool:
         try:
-            enabled = self.program.is_robot_enabled()
+            enabled = is_robot_enabled(self.program)
         except Exception:
             enabled = False
 
