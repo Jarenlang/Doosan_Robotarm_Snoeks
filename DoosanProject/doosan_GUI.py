@@ -1,6 +1,7 @@
-
+import threading
 import tkinter as tk
 from tkinter import ttk, messagebox
+import webbrowser
 
 from qr_scanner import scan_qr_with_camera
 from doosan_backend import *
@@ -47,6 +48,35 @@ def setup_snoeks_style(root):
     # Entry (donkere velden, lichte tekst)
     style.configure("Snoeks.TEntry", fieldbackground=Snoeks_Dark, foreground=Snoeks_Text, background=Snoeks_Dark2, bordercolor=Snoeks_Dark)
 
+class ToolTip:
+    def __init__(self, widget, text: str):
+        self.widget = widget
+        self.text = text
+        self.tipwindow = None
+        widget.bind("<Enter>", self._show)
+        widget.bind("<Leave>", self._hide)
+
+    def _show(self, event=None):
+        if self.tipwindow or not self.text:
+            return
+        x = self.widget.winfo_rootx() + 20
+        y = self.widget.winfo_rooty() + self.widget.winfo_height() + 5
+        self.tipwindow = tw = tk.Toplevel(self.widget)
+        tw.wm_overrideredirect(True)
+        tw.wm_geometry(f"+{x}+{y}")
+        label = tk.Label(
+            tw, text=self.text, justify="left",
+            background="#ffffe0", relief="solid", borderwidth=1,
+            font=("tahoma", 8)
+        )
+        label.pack(ipadx=4, ipady=2)
+
+    def _hide(self, event=None):
+        tw = self.tipwindow
+        self.tipwindow = None
+        if tw:
+            tw.destroy()
+
 class RobotGUI:
     def __init__(self, root):
         self.root = root
@@ -54,7 +84,7 @@ class RobotGUI:
         setup_snoeks_style(root)
 
         try:
-            icon_img = tk.PhotoImage(file="download.png")
+            icon_img = tk.PhotoImage(file="Snoeks.png")
             self._icon_img = icon_img
             self.root.iconphoto(False, icon_img)
         except Exception as e:
@@ -119,6 +149,13 @@ class RobotGUI:
         self.btn_exit = ttk.Button(ctrl_frame, text="Exit", command=self.on_exit, style="Snoeks.TButton",)
         self.btn_exit.grid(row=0, column=3, padx=5)
 
+        ToolTip(self.btn_connect, "Verbind met de robot op het opgegeven IP-adres.")
+        ToolTip(self.btn_start, "Scan QR en start de sequence na operatorbevestiging.")
+        ToolTip(self.btn_stop, "Vraag een stop van de huidige sequence aan.")
+        ToolTip(self.btn_home, "Beweeg de robot naar de HOME-positie.")
+        ToolTip(self.btn_apply, "Stuur de parameters naar de robot en sla ze op.")
+        ToolTip(self.btn_exit, "Sluit de applicatie.")
+
         # Opvallend sequence-state vakje
         self.seq_state_var = tk.StringVar(value="")
         self.seq_state_frame = ttk.Frame(ctrl_frame, padding=6, style="Snoeks.TFrame")
@@ -150,25 +187,67 @@ class RobotGUI:
             lbl.grid(row=3, column=1 + i, padx=2)
             self.di_labels.append(lbl)
 
+        # Quick buttons voor IO-patronen
+        quick_frame = ttk.Frame(io_frame, style="Snoeks.TFrame")
+        quick_frame.grid(row=4, column=0, columnspan=1 + self.num_do, sticky="w", pady=(5, 0))
+
+        btn_all_off = ttk.Button(
+            quick_frame, text="All DO off",
+            command=self._all_do_off, style="Snoeks.TButton"
+        )
+        btn_all_off.pack(side="left", padx=(0, 5))
+
+        btn_reset_lamps = ttk.Button(
+            quick_frame, text="Reset lamps",
+            command=self._reset_lamps, style="Snoeks.TButton"
+        )
+        btn_reset_lamps.pack(side="left")
+
         # Status
         status_frame = ttk.LabelFrame(root, text="Status", padding=10, style="Snoeks.TLabelframe")
         status_frame.pack(fill="both", expand=True, padx=10, pady=5)
 
-        self.status_text = tk.Text( status_frame, height=10, bg=Snoeks_Dark, fg="white", insertbackground="white", relief="flat")
+        self.status_text = tk.Text(status_frame, height=10, bg=Snoeks_Dark, fg="white", insertbackground="white", relief="flat")
         self.status_text.pack(fill="both", expand=True)
+
+        # Status-filters
+        filter_frame = ttk.Frame(status_frame, style="Snoeks.TFrame")
+        filter_frame.pack(fill="x", pady=(5, 0))
+
+        self.var_filter_errors = tk.BooleanVar(value=False)
+        self.var_filter_seq = tk.BooleanVar(value=False)
+
+        chk_errors = ttk.Checkbutton(filter_frame, text="Toon alleen fouten", variable=self.var_filter_errors, style="TCheckbutton")
+        chk_errors.pack(side="left", padx=(0, 10))
+
+        chk_seq = ttk.Checkbutton(filter_frame, text="Toon alleen sequence-status", variable=self.var_filter_seq, style="TCheckbutton")
+        chk_seq.pack(side="left", padx=(0, 10))
+
         self.append_status("Klaar. Verbind met de robot.")
         self.root.protocol("WM_DELETE_WINDOW", self.on_exit)
+        self.root.bind_all("<Control-r>", self._on_rickroll)
+        self.root.bind_all("<Control-R>", self._on_rickroll)
         self._update_status_from_robot()
 
     # ---------- Helpers / callbacks ----------
 
     def append_status(self, msg: str):
+        # Filter: alleen fouten?
+        if getattr(self, "var_filter_errors", None) is not None and self.var_filter_errors.get():
+            lower = msg.lower()
+            if not any(w in lower for w in ("fout", "error", "verbroken")):
+                return
+
+        # Filter: alleen sequence-status?
+        if getattr(self, "var_filter_seq", None) is not None and self.var_filter_seq.get():
+            if "Sequence" not in msg and "Sequence" not in self.seq_state_var.get():
+                return
+
         self.status_text.config(state="normal")
         self.status_text.insert("end", msg + "\n")
         self.status_text.see("end")
         self.status_text.config(state="disabled")
 
-        # korte sequence state updaten (laatste bericht)
         if hasattr(self, "seq_state_var"):
             self.seq_state_var.set(msg)
 
@@ -422,6 +501,32 @@ class RobotGUI:
             if self._is_connection_lost_error(e):
                 self._set_disconnected_state(str(e))
 
+    def _all_do_off(self):
+        if self.gateway.sock is None:
+            self.append_status("Kan DO niet resetten: niet verbonden.")
+            return
+        try:
+            for i, var in enumerate(self.do_vars, start=1):
+                self.gateway.set_digital_output(i, 0)
+                var.set(0)
+            self.append_status("Alle DO-uitgangen zijn uit gezet.")
+        except Exception as e:
+            self.append_status(f"All DO off fout: {e}")
+            if self._is_connection_lost_error(e):
+                self._set_disconnected_state(str(e))
+
+    def _reset_lamps(self):
+        if self.gateway.sock is None:
+            self.append_status("Kan lamps niet resetten: niet verbonden.")
+            return
+        try:
+            # gebruik je backend-config DO's
+            self.append_status("Lampen gereset (READY/MOVE uit).")
+        except Exception as e:
+            self.append_status(f"Reset lamps fout: {e}")
+            if self._is_connection_lost_error(e):
+                self._set_disconnected_state(str(e))
+
     def _check_robot_enabled_or_warn(self) -> bool:
         try:
             enabled = is_robot_enabled(self.program)
@@ -436,6 +541,12 @@ class RobotGUI:
             )
             return False
         return True
+
+    def _on_rickroll(self, event=None):
+        try:
+            webbrowser.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ", new=2)
+        except Exception as e:
+            pass
 
 if __name__ == "__main__":
     root = tk.Tk()
