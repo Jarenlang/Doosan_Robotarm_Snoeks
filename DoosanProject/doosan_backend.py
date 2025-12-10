@@ -42,23 +42,6 @@ def is_robot_enabled(self) -> bool:
     except Exception:
         return False
 
-def wait_for_operator_confirm(self, statuscallback=None):
-    if statuscallback:
-        statuscallback("Wachten op operatorbevestiging (groene knop)...")
-
-    while True:
-        try:
-            btn1 = self.gateway.get_digital_input(1)
-            btn4 = self.gateway.get_digital_input(4)
-        except Exception:
-            btn1 = 0
-            btn4 = 0
-        if btn1 == 1 or btn4 == 1:
-            if statuscallback:
-                statuscallback("Groene knop ingedrukt, sequence gaat verder.")
-            break
-        time.sleep(0.1)
-
 # Laad globale config
 _config = load_config()
 ROBOT_IP = _config.get("robot_ip")

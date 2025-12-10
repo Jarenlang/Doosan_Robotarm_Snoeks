@@ -444,16 +444,20 @@ class RobotGUI:
             try:
                 self.append_status("Sequence start...")
                 self._set_seq_state("Sequence running")
-                #self.gateway.set_lamp(False, True)
                 self.program.sequence_pick_and_place(self.append_status)
                 self.append_status("Sequence klaar.")
-                #self.gateway.set_lamp(True, False)
                 self._set_seq_state("Sequence done")
             except Exception as e:
                 self.append_status(f"Fout in sequence: {e}")
                 self._set_seq_state("Sequence error")
                 if self._is_connection_lost_error(e):
                     self.root.after(0, lambda: self._set_disconnected_state(str(e)))
+            finally:
+                # na korte tijd de status weer leeg zodat de GUI niet 'blijft hangen'
+                def clear_state():
+                    self._set_seq_state(None)
+
+                self.root.after(1000, clear_state)
 
         self.sequence_thread = threading.Thread(target=run_seq, daemon=True)
         self.sequence_thread.start()

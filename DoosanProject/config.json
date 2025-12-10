@@ -4,7 +4,7 @@
   "LAMP_DO_READY": 1,
   "LAMP_DO_MOVE": 2,
   "operation_speed": 100.0,
-  "velx": 1900.0,
+  "velx": 800.0,
   "accx": 1500.0,
   "p_home": [
     -66,
