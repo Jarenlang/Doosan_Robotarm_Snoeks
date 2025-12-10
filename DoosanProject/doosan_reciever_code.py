@@ -6,6 +6,16 @@ def parse_floats(tokens, start_idx, count):
         vals.append(float(tokens[start_idx + i]))
     return vals
 
+def all_outputs_off():
+    # Zet DO1 t/m DO4 laag
+    try:
+        set_digital_output(1, 0)
+        set_digital_output(2, 0)
+        set_digital_output(3, 0)
+        set_digital_output(4, 0)
+    except Exception as e:
+        server_socket_write(sock, b"OK amovel\n")
+
 def handle_command(sock, line):
     tokens = line.split()
     if len(tokens) == 0:
@@ -176,6 +186,19 @@ def main():
         tp_log("connected")
 
         while True:
+            try:
+                blue_pressed = get_digital_input(3)
+                if blue_pressed == 1:
+                    try:
+                        set_digital_output(1, 0)
+                        set_digital_output(2, 0)
+                        set_digital_output(3, 0)
+                        set_digital_output(4, 0)
+                    except Exception as e:
+                        tplog(f"Fout bij alle outputs uitzetten: {e}")
+            except Exception as e:
+                tplog(f"Error bij uitlezen blauwe knop: {e}")
+
             res, rxdata = server_socket_read(sock, -1, -1)
             if res <= 0:
                 tp_log("client disconnected or error, stopping robot and closing socket")

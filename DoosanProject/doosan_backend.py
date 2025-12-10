@@ -2,6 +2,7 @@ import socket
 import threading
 import json
 import os
+import time
 
 CONFIG_FILE = "config.json"
 
@@ -33,6 +34,30 @@ def save_config(cfg: dict):
     with open(CONFIG_FILE, "w", encoding="utf-8") as f:
         json.dump(cfg, f, indent=2)
 
+# ----------------- Operator / safety helpers -----------------
+
+def is_robot_enabled(self) -> bool:
+    try:
+        return self.gateway.get_digital_input(2) == 1  # pas index aan als je andere DI gebruikt
+    except Exception:
+        return False
+
+def wait_for_operator_confirm(self, statuscallback=None):
+    if statuscallback:
+        statuscallback("Wachten op operatorbevestiging (groene knop)...")
+
+    while True:
+        try:
+            btn1 = self.gateway.get_digital_input(1)
+            btn4 = self.gateway.get_digital_input(4)
+        except Exception:
+            btn1 = 0
+            btn4 = 0
+        if btn1 == 1 or btn4 == 1:
+            if statuscallback:
+                statuscallback("Groene knop ingedrukt, sequence gaat verder.")
+            break
+        time.sleep(0.1)
 
 # Laad globale config
 _config = load_config()
@@ -267,4 +292,3 @@ class DoosanGatewayClient:
                 raise TimeoutError("Robot still moving after wait_until_stopped timeout")
 
             time.sleep(poll_interval)
-

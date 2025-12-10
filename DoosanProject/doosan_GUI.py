@@ -3,7 +3,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 
 from qr_scanner import scan_qr_with_camera
-from doosan_backend import (DoosanGatewayClient, ROBOT_IP, PORT, load_config)
+from doosan_backend import *
 from doosan_sequence import RobotProgram
 
 
@@ -331,7 +331,7 @@ class RobotGUI:
                 self.program.apply_parameters()
 
             self.program.save_parameters_to_config()
-            self.append_status("Parameters toegepast en opgeslagen.")
+            self.append_status("Parameters toegepast en/of opgeslagen.")
 
         except Exception as e:
             messagebox.showerror("Param error", str(e))
@@ -339,6 +339,9 @@ class RobotGUI:
     def on_start_sequence(self):
         if self.sequence_thread and self.sequence_thread.is_alive():
             messagebox.showinfo("Info", "Sequence is al bezig.")
+            return
+
+        if not self._check_robot_enabled_or_warn():
             return
 
         result = scan_qr_with_camera()
@@ -351,6 +354,12 @@ class RobotGUI:
         self.program.do_seatbelts = (result in (1, 2))
 
         self.append_status(f"QR-code resultaat: {result} " f"(gordels={self.program.do_gordels}, " f"armsteunen={self.program.do_armsteunen})")
+
+        messagebox.showinfo(
+            "Wachten op bevestiging",
+            "Er wordt gewacht op een groene knop.\n"
+            "Druk op een van de groene knoppen om de sequence te starten."
+        )
 
         def run_seq():
             try:
@@ -383,6 +392,9 @@ class RobotGUI:
         self.root.destroy()
 
     def on_home(self):
+        if not self._check_robot_enabled_or_warn():
+            return
+
         try:
             self.program.apply_parameters()
             #self.gateway.set_lamp(False, True)
@@ -409,6 +421,21 @@ class RobotGUI:
             self.append_status(f"DO{index} fout: {e}")
             if self._is_connection_lost_error(e):
                 self._set_disconnected_state(str(e))
+
+    def _check_robot_enabled_or_warn(self) -> bool:
+        try:
+            enabled = self.program.is_robot_enabled()
+        except Exception:
+            enabled = False
+
+        if not enabled:
+            messagebox.showwarning(
+                "Robot disabled",
+                "De fysieke schakelaar staat uit.\n"
+                "Zet de schakelaar op AAN voordat je de robot beweegt."
+            )
+            return False
+        return True
 
 if __name__ == "__main__":
     root = tk.Tk()

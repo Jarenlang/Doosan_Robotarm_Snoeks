@@ -1,4 +1,4 @@
-from doosan_backend import load_config, DoosanGatewayClient, save_config
+from doosan_backend import load_config, DoosanGatewayClient, save_config, is_robot_enabled, wait_for_operator_confirm
 """
 doosan_sequence.py
 
@@ -13,8 +13,8 @@ doosan_sequence.py
     self.gateway.wait_until_stopped()                           zie bovenstaande opmerking
 
 - Digitale IO:
-    self.set_do(index, value)   # 0/1, bv. self.set_do(0, 1)    Hiermee kun je een Digital Output (index) aan of uit zetten (met Value 1 = hoog, 0 = laag)
-    v = self.get_di(index)      # 0/1, bv. v = self.get_di(3)   Hiermee kun je de staat van de gekozen input uitlezen, en die opslaan in een waarde (nu v)
+    self.gateway.set_digital_output(index, value)               Hiermee kun je een Digital Output (index) aan of uit zetten (met Value 1 = hoog, 0 = laag)
+    v = self.gateway.get_digital_input(index)                   Hiermee kun je de staat van de gekozen input uitlezen, en die opslaan in een waarde (nu v)
 
 - Sequence-status loggen (wordt ook in de GUI getoond):
     def log(msg: str):
@@ -87,16 +87,6 @@ class RobotProgram:
         self._stop_flag = True
         self.gateway.stop()
 
-    # ----------------- IO helpers (voor sequences) -----------------
-
-    def set_do(self, index: int, value: int):
-        """Digitaal output zetten (0/1)."""
-        self.gateway.set_digital_output(index, value)
-
-    def get_di(self, index: int) -> int:
-        """Digitaal input lezen (0/1)."""
-        return self.gateway.get_digital_input(index)
-
     # ----------------- Voorbeeld-sequence -----------------
 
     def sequence_pick_and_place(self, status_callback=None):
@@ -108,6 +98,11 @@ class RobotProgram:
 
         self._stop_flag = False
 
+        if not is_robot_enabled():
+            log("Robot is niet enabled via schakelaar; sequence wordt niet gestart.")
+            return
+
+        wait_for_operator_confirm(status_callback)
         """"
         Begin hieronder met het coderen van de sequence-functie:
         """
@@ -136,8 +131,8 @@ class RobotProgram:
             self.gateway.wait_until_stopped()
 
             # voorbeeld IO: DO0 aan, wachten op DI3
-            self.set_do(1, 1)
-            if self.get_di(3) == 1:
+            self.gateway.set_digital_output(1, 1)
+            if self.gateway.get_digital_input(3) == 1:
                 log("Sensor actief")
             if self._stop_flag:
                 log("Sequence gestopt")
@@ -155,106 +150,17 @@ class RobotProgram:
             log("Terug naar home")
             self.gateway.amovel(*self.p_home, self.velx, self.accx)
             self.gateway.wait_until_stopped()
-            self.set_do(1, 0)
+            self.gateway.set_digital_output(1, 0)
             if self._stop_flag:
                 log("Sequence gestopt")
                 return
 
         if self.do_armsteunen:
-            log("Armsteunen plaatsen...")
-            # 1) Naar home
-            log("Naar home")
-            self.gateway.amovel(*self.p_home, self.velx, self.accx)
-            self.gateway.wait_until_stopped()
-            if self._stop_flag:
-                log("Sequence gestopt")
-                return
-
-            # 2) Naar pick
-            log("Naar pick")
-            self.gateway.amovel(*self.p_pick, self.velx, self.accx)
-            self.gateway.wait_until_stopped()
-            if self._stop_flag:
-                log("Sequence gestopt")
-                return
-
-            # 3) Naar place
-            log("Naar place")
-            self.gateway.amovel(*self.p_place, self.velx, self.accx)
-            self.gateway.wait_until_stopped()
-
-            # voorbeeld IO: DO0 aan, wachten op DI3
-            self.set_do(1, 1)
-            if self.get_di(3) == 1:
-                log("Sensor actief")
-            if self._stop_flag:
-                log("Sequence gestopt")
-                return
-
-            # 4) Naar pick
-            log("Naar pick")
-            self.gateway.amovel(*self.p_pick, self.velx, self.accx)
-            self.gateway.wait_until_stopped()
-            if self._stop_flag:
-                log("Sequence gestopt")
-                return
-
-            # 5) Terug naar home
-            log("Terug naar home")
-            self.gateway.amovel(*self.p_home, self.velx, self.accx)
-            self.gateway.wait_until_stopped()
-            self.set_do(1, 0)
-            if self._stop_flag:
-                log("Sequence gestopt")
-                return
+            log("do armsteunen...")
+            #do something
 
         if self.do_seatbelts:
-            log("Seatbelts plaatsen...")
-            # 1) Naar home
-            log("Naar home")
-            self.gateway.amovel(*self.p_home, self.velx, self.accx)
-            self.gateway.wait_until_stopped()
-            if self._stop_flag:
-                log("Sequence gestopt")
-                return
-
-            # 2) Naar pick
-            log("Naar pick")
-            self.gateway.amovel(*self.p_pick, self.velx, self.accx)
-            self.gateway.wait_until_stopped()
-            if self._stop_flag:
-                log("Sequence gestopt")
-                return
-
-            # 3) Naar place
-            log("Naar place")
-            self.gateway.amovel(*self.p_place, self.velx, self.accx)
-            self.gateway.wait_until_stopped()
-
-            # voorbeeld IO: DO0 aan, wachten op DI3
-            self.set_do(1, 1)
-            if self.get_di(3) == 1:
-                log("Sensor actief")
-            if self._stop_flag:
-                log("Sequence gestopt")
-                return
-
-            # 4) Naar pick
-            log("Naar pick")
-            self.gateway.amovel(*self.p_pick, self.velx, self.accx)
-            self.gateway.wait_until_stopped()
-            if self._stop_flag:
-                log("Sequence gestopt")
-                return
-
-            # 5) Terug naar home
-            log("Terug naar home")
-            self.gateway.amovel(*self.p_home, self.velx, self.accx)
-            self.gateway.wait_until_stopped()
-            self.set_do(1, 0)
-            if self._stop_flag:
-                log("Sequence gestopt")
-                return
+            log("do seatbelts...")
 
         log("Terug naar home")
         self.gateway.amovel(self.p_home, self.velx, self.accx)
