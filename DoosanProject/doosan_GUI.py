@@ -1,4 +1,3 @@
-import threading
 import tkinter as tk
 from tkinter import ttk, messagebox
 import webbrowser
@@ -433,12 +432,6 @@ class RobotGUI:
         self.program.do_seatbelts = (result in (1, 2))
 
         self.append_status(f"QR-code resultaat: {result} " f"(gordels={self.program.do_gordels}, " f"armsteunen={self.program.do_armsteunen})")
-
-        messagebox.showinfo(
-            "Wachten op bevestiging",
-            "Er wordt gewacht op een groene knop.\n"
-            "Druk op een van de groene knoppen om de sequence te starten."
-        )
 
         def run_seq():
             try:

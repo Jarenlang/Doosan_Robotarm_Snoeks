@@ -54,7 +54,14 @@ class RobotProgram:
 
         self.p_home = self.config.get("p_home")
         self.p_pick = self.config.get("p_pick")
-        self.p_place = self.config.get("p_place")
+        self.p_move_down = self.config.get("p_move_down")
+        self.p_move_out = self.config.get("p_move_out")
+        self.p_move_up = self.config.get("p_move_up")
+        self.p_move_infront = self.config.get("p_move_infront")
+        self.p_tussenstop = self.config.get("p_tussenstop")
+        self.p_tussenstop_2 = self.config.get("p_tussenstop_2")
+        self.p_voor_beugel = self.config.get("p_voor_beugel")
+        self.p_in_houder = self.config.get("p_in_houder")
         self._stop_flag = False
 
         # QR / product flags
@@ -71,7 +78,15 @@ class RobotProgram:
         self.config["accx"] = self.accx
         self.config["p_home"] = self.p_home
         self.config["p_pick"] = self.p_pick
-        self.config["p_place"] = self.p_place
+        self.config["p_move_down"] = self.p_move_down
+        self.config["p_move_out"] = self.p_move_out
+        self.config["p_move_up"] = self.p_move_up
+        self.config["p_move_infront"] = self.p_move_infront
+        self.config["p_tussenstop"] = self.p_tussenstop
+        self.config["p_tussenstop_2"] = self.p_tussenstop_2
+        self.config["p_voor_beugel"] = self.p_voor_beugel
+        self.config["p_in_houder"] = self.p_in_houder
+
         # eventueel ook IP en poort opslaan
         self.config["robot_ip"] = self.gateway.ip
         self.config["port"] = self.gateway.port
@@ -122,7 +137,6 @@ class RobotProgram:
             return
 
         self.wait_for_operator_confirm(status_callback)
-        log("confirmed")
         """"
         Begin hieronder met het coderen van de sequence-functie:
         """
@@ -144,42 +158,57 @@ class RobotProgram:
             return
 
         # 3) Naar place
-        log("Naar place")
-        self.gateway.amovel(*self.p_place, self.velx, self.accx)
+        log("naar beneden")
+        self.gateway.amovel(*self.p_move_down, self.velx, self.accx)
         self.gateway.wait_until_stopped()
 
         # voorbeeld IO: DO0 aan, wachten op DI3
         self.gateway.set_digital_output(1, 1)
-        if self.gateway.get_digital_input(3) == 1:
-            log("Sensor actief")
+        self.gateway.set_digital_output(2, 1)
+        self.gateway.set_digital_output(3, 1)
+        self.wait_for_operator_confirm(status_callback)
+
+        # 4) Naar pick
+        log("terug omhoog bewegen")
+        self.gateway.amovel(*self.p_move_out, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
         if self._stop_flag:
             log("Sequence gestopt")
             return
 
-        # 4) Naar pick
-        log("Naar pick")
-        self.gateway.amovel(*self.p_pick, self.velx, self.accx)
+        #5) Naar volgende beweging
+        log("beweeg omhoog")
+        self.gateway.amovel(*self.p_move_up, self.velx, self.accx)
         self.gateway.wait_until_stopped()
         if self._stop_flag:
             log("Sequence gestopt")
             return
 
         # 5) Terug naar home
-        log("Terug naar home")
-        self.gateway.amovel(*self.p_home, self.velx, self.accx)
+        log("tussenstop")
+        self.gateway.amovel(*self.p_tussenstop, self.velx, self.accx)
         self.gateway.wait_until_stopped()
-        self.gateway.set_digital_output(1, 0)
         if self._stop_flag:
             log("Sequence gestopt")
             return
 
-        if self.do_gordels:
-                log("do gordels")
-                #do something
+        log("tussenstop")
+        self.gateway.amovel(*self.p_tussenstop_2, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
 
-        if self.do_armsteunen:
-                log("do armsteunen...")
-                #do something
+        log("voor beugel")
+        self.gateway.amovel(*self.p_voor_beugel, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
 
-        if self.do_seatbelts:
-                log("do seatbelts...")
+        log("in beugel")
+        self.gateway.amovel(*self.p_in_houder, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
