@@ -2,10 +2,9 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import webbrowser
 
-from qr_scanner import scan_qr_with_camera
+from qr_scanner import scan_qr_only, scan_barcode_only, scan_qr_with_camera
 from doosan_backend import *
 from doosan_sequence import RobotProgram
-
 
 cfg = load_config()
 Snoeks_Red = cfg.get("Snoeks_Red")
@@ -148,6 +147,14 @@ class RobotGUI:
         self.btn_exit = ttk.Button(ctrl_frame, text="Exit", command=self.on_exit, style="Snoeks.TButton",)
         self.btn_exit.grid(row=0, column=3, padx=5)
 
+        self.btn_test_qr = ttk.Button(ctrl_frame, text="Test QR", command=self.on_test_qr, style="Snoeks.TButton")
+        self.btn_test_qr.grid(row=1, column=0, padx=5, pady=5)
+
+        self.btn_test_bar = ttk.Button( ctrl_frame, text="Test barcode", command=self.on_test_barcode,style="Snoeks.TButton")
+        self.btn_test_bar.grid(row=1, column=1, padx=5, pady=5)
+
+        ToolTip(self.btn_test_qr, "Scan alleen een QR-code, log naar scanned.json.")
+        ToolTip(self.btn_test_bar, "Scan alleen een barcode, log naar scanned.json.")
         ToolTip(self.btn_connect, "Verbind met de robot op het opgegeven IP-adres.")
         ToolTip(self.btn_start, "Scan QR en start de sequence na operatorbevestiging.")
         ToolTip(self.btn_stop, "Vraag een stop van de huidige sequence aan.")
@@ -544,6 +551,23 @@ class RobotGUI:
             webbrowser.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ", new=2)
         except Exception as e:
             pass
+
+    def on_test_qr(self):
+        code = scan_qr_only()
+        if code:
+            messagebox.showinfo("Scan gelukt", f"QR-code: {code}")
+            self.append_status(f"Testscan QR: {code}")
+        else:
+            messagebox.showwarning("Geen code", "Er is geen geldige QR-code gevonden.")
+
+    def on_test_barcode(self):
+        code = scan_barcode_only()
+        if code:
+            messagebox.showinfo("Scan gelukt", f"Barcode: {code}")
+            self.append_status(f"Testscan barcode: {code}")
+        else:
+            messagebox.showwarning("Geen code", "Er is geen geldige barcode gevonden.")
+
 
 if __name__ == "__main__":
     root = tk.Tk()
