@@ -217,9 +217,9 @@ def main():
                         set_digital_output(3, 0)
                         set_digital_output(4, 0)
                     except Exception as e:
-                        tplog(f"Fout bij alle outputs uitzetten: {e}")
+                        tp_log("Fout bij alle outputs uitzetten: {e}")
             except Exception as e:
-                tplog(f"Error bij uitlezen blauwe knop: {e}")
+                tp_log("Error bij uitlezen blauwe knop: {e}")
 
             res, rxdata = server_socket_read(sock, -1, -1)
             if res <= 0:
