@@ -179,7 +179,7 @@ def handle_command(sock, line):
     if cmd == "toolforce":
         # Verwacht: 'toolforce 0' of 'toolforce 1' (ref-frame)
         if len(tokens) != 2:
-            serversocket_write(sock, b"ERR toolforce needs 1 arg")
+            server_socket_write(sock, b"ERR toolforce needs 1 arg")
             return
         try:
             ref = int(tokens[1])
@@ -192,9 +192,9 @@ def handle_command(sock, line):
             fz = f[2]
             total = (fx*fx + fy*fy + fz*fz) ** 0.5
             msg = "OK toolforce {}".format(total)
-            serversocket_write(sock, msg.encode())
+            server_socket_write(sock, msg.encode())
         except:
-            serversocket_write(sock, b"ERR toolforce invalid args")
+            server_socket_write(sock, b"ERR toolforce invalid args")
         return
 
 
