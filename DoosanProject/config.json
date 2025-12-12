@@ -6,6 +6,10 @@
   "operation_speed": 100.0,
   "velx": 100.0,
   "accx": 200.0,
+  "Snoeks_Red": "#c90000",
+  "Snoeks_Dark": "#111111",
+  "Snoeks_Dark2": "#2c2c2c",
+  "Snoeks_Text": "#000000",
   "p_home": [
     -735,
     64,
@@ -85,9 +89,5 @@
     178.4,
     -96.3,
     -132
-  ],
-  "Snoeks_Red": "#c90000",
-  "Snoeks_Dark": "#111111",
-  "Snoeks_Dark2": "#2c2c2c",
-  "Snoeks_Text": "#000000"
+  ]
 }

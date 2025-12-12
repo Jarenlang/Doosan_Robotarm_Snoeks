@@ -216,6 +216,10 @@ class RobotGUI:
         self.status_text = tk.Text(status_frame, height=10, bg=Snoeks_Dark, fg="white", insertbackground="white", relief="flat")
         self.status_text.pack(fill="both", expand=True)
 
+        self.forcevar = tk.StringVar(value="Force: ? N")
+        self.forcelabel = ttk.Label(status_frame, textvariable=self.forcevar, style="Snoeks.TLabel")
+        self.forcelabel.pack(anchor="w", pady=2)
+
         # Status-filters
         filter_frame = ttk.Frame(status_frame, style="Snoeks.TFrame")
         filter_frame.pack(fill="x", pady=(5, 0))
@@ -364,35 +368,45 @@ class RobotGUI:
 
                     # digitale inputs uitlezen
                     if self.gateway.sock is not None:
-                        di_values = {}
+                        divalues = {}
                         for i in range(1, self.num_di + 1):
                             try:
                                 v = self.gateway.get_digital_input(i)
-                                di_values[i] = v
-                            except Exception as e_io:
-                                di_values[i] = "?"
+                                divalues[i] = v
+                            except Exception as eio:
+                                divalues[i] = "?"
                                 if i not in self._io_error_reported:
                                     self._io_error_reported.add(i)
 
-                                    def log_err(i=i, e_io=e_io):
-                                        self.append_status(f"DI{i} leesfout: {e_io}")
+                                    def logerr(i=i, eio=eio):
+                                        self.append_status(f"DI{i} leesfout: {eio}")
 
-                                    self.root.after(0, log_err)
-
-                                # als de backend zegt dat er geen verbinding is, GUI resetten
-                                if self._is_connection_lost_error(e_io):
-                                    def disc():
-                                        self._set_disconnected_state(str(e_io))
+                                    self.root.after(0, logerr)
+                                if self._is_connection_lost_error(eio):
+                                    def disc(e=eio):
+                                        self._set_disconnected_state(str(e))
 
                                     self.root.after(0, disc)
                                     break
 
-                        # labels updaten op GUI-thread
-                        def upd_labels():
-                            for i, v in di_values.items():
-                                self.di_labels[i - 1].config(text=f"{i}: {v}")
+                        # Force uitlezen
+                        force_value = None
+                        try:
+                            force_value = self.gateway.get_tool_force(0)  # ref=0 of 1, wat jij nodig hebt
+                        except Exception as eforce:
+                            # Niet spammen met errors; optioneel 1x loggen
+                            pass
 
-                        self.root.after(0, upd_labels)
+                        def updlabels(force_value=force_value):
+                            for i, v in divalues.items():
+                                self.di_labels[i - 1].config(text=f"DI{i}: {v}")
+                            if force_value is not None:
+                                self.forcevar.set(f"Force: {force_value:.1f} N")
+                            else:
+                                self.forcevar.set("Force: ? N")
+
+                        self.root.after(0, updlabels)
+
 
                 except Exception as e:
                     # algemene poll-fout: ook maar één keer loggen

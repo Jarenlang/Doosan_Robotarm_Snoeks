@@ -176,6 +176,28 @@ def handle_command(sock, line):
         server_socket_write(sock, msg.encode())
         return
 
+    if cmd == "toolforce":
+        # Verwacht: 'toolforce 0' of 'toolforce 1' (ref-frame)
+        if len(tokens) != 2:
+            serversocket_write(sock, b"ERR toolforce needs 1 arg")
+            return
+        try:
+            ref = int(tokens[1])
+            # DRL-call: get_tool_force(ref) -> lijst/vector met 6 waardes
+            f = get_tool_force(ref)
+            # Neem de norm (totale kracht) of bijv. f[0] als enkel component
+            # Stel dat je de norm wilt sturen:
+            fx = f[0]
+            fy = f[1]
+            fz = f[2]
+            total = (fx*fx + fy*fy + fz*fz) ** 0.5
+            msg = "OK toolforce {}".format(total)
+            serversocket_write(sock, msg.encode())
+        except:
+            serversocket_write(sock, b"ERR toolforce invalid args")
+        return
+
+
     server_socket_write(sock, b"ERR unknown command\n")
 
 

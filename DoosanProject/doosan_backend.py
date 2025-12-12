@@ -2,7 +2,6 @@ import socket
 import threading
 import json
 import os
-import time
 
 CONFIG_FILE = "config.json"
 
@@ -272,3 +271,16 @@ class DoosanGatewayClient:
                 raise TimeoutError("Robot still moving after wait_until_stopped timeout")
 
             time.sleep(poll_interval)
+
+    def get_tool_force(self, ref: int = 0) -> float:
+        resp = self.send_raw(f"toolforce {int(ref)}")
+        if not resp:
+            raise RuntimeError("Empty response from toolforce")
+        parts = resp.strip().split()
+        # Verwacht: OK toolforce value
+        if len(parts) == 3 and parts[0].upper() == "OK" and parts[1].lower() == "toolforce":
+            try:
+                return float(parts[2])
+            except ValueError:
+                raise RuntimeError(f"Unexpected toolforce payload {parts[2]!r} in {resp!r}")
+        raise RuntimeError(f"toolforce error response {resp!r}")
