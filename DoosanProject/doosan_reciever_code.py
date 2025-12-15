@@ -203,24 +203,24 @@ def handle_command(sock, line):
 
 def main():
     while True:
+        try:
+            blue_pressed = get_digital_input(3)
+            if blue_pressed == 1:
+                try:
+                    set_digital_output(1, 0)
+                    set_digital_output(2, 0)
+                    set_digital_output(3, 0)
+                    set_digital_output(4, 0)
+                except Exception as e:
+                    tp_log("Fout bij alle outputs uitzetten: {e}")
+        except Exception as e:
+            tp_log("Error bij uitlezen blauwe knop: {e}")
+
         tp_log("waiting for connection")
         sock = server_socket_open(PORT)
         tp_log("connected")
 
         while True:
-            try:
-                blue_pressed = get_digital_input(3)
-                if blue_pressed == 1:
-                    try:
-                        set_digital_output(1, 0)
-                        set_digital_output(2, 0)
-                        set_digital_output(3, 0)
-                        set_digital_output(4, 0)
-                    except Exception as e:
-                        tp_log("Fout bij alle outputs uitzetten: {e}")
-            except Exception as e:
-                tp_log("Error bij uitlezen blauwe knop: {e}")
-
             res, rxdata = server_socket_read(sock, -1, -1)
             if res <= 0:
                 tp_log("client disconnected or error, stopping robot and closing socket")

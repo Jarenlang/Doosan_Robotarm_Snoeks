@@ -44,7 +44,13 @@ def setup_snoeks_style(root):
     style.map("SnoeksPrimary.TButton", background=[("active", "#e00000")])
 
     # Entry (donkere velden, lichte tekst)
-    style.configure("Snoeks.TEntry", fieldbackground=Snoeks_Dark, foreground=Snoeks_Text, background=Snoeks_Dark2, bordercolor=Snoeks_Dark)
+    style.configure(
+        "SnoeksBlack.TEntry",
+        fieldbackground=Snoeks_Dark,
+        foreground=Snoeks_Text,
+        background=Snoeks_Dark2,
+        bordercolor=Snoeks_Dark,
+    )
 
 class ToolTip:
     def __init__(self, widget, text: str):
@@ -106,7 +112,7 @@ class RobotGUI:
         ttk.Label(top_frame, text="Robot IP:", style="Snoeks.TLabel").grid(row=0, column=0, sticky="w")
 
         self.ip_var = tk.StringVar(value=default_ip)
-        ttk.Entry(top_frame, textvariable=self.ip_var, width=16).grid(row=0, column=1, sticky="w")
+        ttk.Entry(top_frame, textvariable=self.ip_var, width=16, style="SnoeksBlack.TEntry").grid(row=0, column=1, sticky="w")
 
         self.btn_connect = ttk.Button(top_frame, text="Connect", command=self.on_connect, style="Snoeks.TButton")
         self.btn_connect.grid(row=0, column=2, padx=5)
@@ -120,12 +126,12 @@ class RobotGUI:
         self.var_accx = tk.DoubleVar(value=self.program.accx)
 
         ttk.Label(param_frame, text="Operation speed (%)").grid(row=0, columnspan=2, sticky="w")
-        ttk.Entry(param_frame, textvariable=self.var_op_speed, width=8).grid(row=0, column=2, sticky="w")
+        ttk.Entry(param_frame, textvariable=self.var_op_speed, width=8, style="SnoeksBlack.TEntry").grid(row=0, column=2, sticky="w")
 
         ttk.Label(param_frame, text="velx").grid(row=2, column=0, sticky="w")
-        ttk.Entry(param_frame, textvariable=self.var_velx, width=8).grid(row=2, column=2, sticky="w")
+        ttk.Entry(param_frame, textvariable=self.var_velx, width=8, style="SnoeksBlack.TEntry").grid(row=2, column=2, sticky="w")
         ttk.Label(param_frame, text="accx").grid(row=3, column=0, sticky="w")
-        ttk.Entry(param_frame, textvariable=self.var_accx, width=8).grid(row=3, column=2, sticky="w")
+        ttk.Entry(param_frame, textvariable=self.var_accx, width=8, style="SnoeksBlack.TEntry").grid(row=3, column=2, sticky="w")
 
         # Apply-knop voor parameters
         self.btn_apply = ttk.Button(param_frame, text="Apply parameters", command=self.on_apply_params, style="Snoeks.TButton")
@@ -443,7 +449,7 @@ class RobotGUI:
         if not self._check_robot_enabled_or_warn():
             return
 
-        result = scan_qr_with_camera()
+        """result = scan_qr_with_camera()
         if result is None:
             messagebox.showerror("QR-fout", "Geen geldige QR-code gevonden of niet in database.")
             return
@@ -452,7 +458,7 @@ class RobotGUI:
         self.program.do_armsteunen = result in (2, 3)
         self.program.do_seatbelts = (result in (1, 2))
 
-        self.append_status(f"QR-code resultaat: {result} " f"(gordels={self.program.do_gordels}, " f"armsteunen={self.program.do_armsteunen})")
+        self.append_status(f"QR-code resultaat: {result} " f"(gordels={self.program.do_gordels}, " f"armsteunen={self.program.do_armsteunen})")"""
 
         def run_seq():
             try:

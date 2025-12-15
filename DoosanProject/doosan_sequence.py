@@ -54,7 +54,7 @@ class RobotProgram:
 
         self.p_home = self.config.get("p_home")
         self.p_pick = self.config.get("p_pick")
-        self.p_move_down = self.config.get("p_move_down")
+        self.p_aside = self.config.get("p_aside")
         self.p_move_out = self.config.get("p_move_out")
         self.p_move_up = self.config.get("p_move_up")
         self.p_move_infront = self.config.get("p_move_infront")
@@ -62,6 +62,7 @@ class RobotProgram:
         self.p_tussenstop_2 = self.config.get("p_tussenstop_2")
         self.p_voor_beugel = self.config.get("p_voor_beugel")
         self.p_in_houder = self.config.get("p_in_houder")
+        self.p_opzij = self.config.get("p_opzij")
         self._stop_flag = False
 
         # QR / product flags
@@ -78,7 +79,7 @@ class RobotProgram:
         self.config["accx"] = self.accx
         self.config["p_home"] = self.p_home
         self.config["p_pick"] = self.p_pick
-        self.config["p_move_down"] = self.p_move_down
+        self.config["p_aside"] = self.p_aside
         self.config["p_move_out"] = self.p_move_out
         self.config["p_move_up"] = self.p_move_up
         self.config["p_move_infront"] = self.p_move_infront
@@ -86,6 +87,7 @@ class RobotProgram:
         self.config["p_tussenstop_2"] = self.p_tussenstop_2
         self.config["p_voor_beugel"] = self.p_voor_beugel
         self.config["p_in_houder"] = self.p_in_houder
+        self.config["p_opzij"] = self.p_opzij
 
         # eventueel ook IP en poort opslaan
         self.config["robot_ip"] = self.gateway.ip
@@ -159,13 +161,13 @@ class RobotProgram:
 
         # 3) Naar place
         log("naar beneden")
-        self.gateway.amovel(*self.p_move_down, self.velx, self.accx)
+        self.gateway.change_operation_speed(15)
+        self.gateway.amovel(*self.p_aside, self.velx, self.accx)
         self.gateway.wait_until_stopped()
+        self.gateway.change_operation_speed(100)
 
-        # voorbeeld IO: DO0 aan, wachten op DI3
+        # 3,5)
         self.gateway.set_digital_output(1, 1)
-        self.gateway.set_digital_output(2, 1)
-        self.gateway.set_digital_output(3, 1)
         self.wait_for_operator_confirm(status_callback)
 
         # 4) Naar pick
@@ -176,38 +178,40 @@ class RobotProgram:
             log("Sequence gestopt")
             return
 
-        #5) Naar volgende beweging
-        log("beweeg omhoog")
-        self.gateway.amovel(*self.p_move_up, self.velx, self.accx)
+        # 5)
+        log("beweeg naar voor")
+        self.gateway.amovel(*self.p_move_infront, self.velx, self.accx)
         self.gateway.wait_until_stopped()
         if self._stop_flag:
             log("Sequence gestopt")
             return
 
-        # 5) Terug naar home
-        log("tussenstop")
-        self.gateway.amovel(*self.p_tussenstop, self.velx, self.accx)
-        self.gateway.wait_until_stopped()
-        if self._stop_flag:
-            log("Sequence gestopt")
-            return
-
-        log("tussenstop")
-        self.gateway.amovel(*self.p_tussenstop_2, self.velx, self.accx)
-        self.gateway.wait_until_stopped()
-        if self._stop_flag:
-            log("Sequence gestopt")
-            return
-
-        log("voor beugel")
-        self.gateway.amovel(*self.p_voor_beugel, self.velx, self.accx)
-        self.gateway.wait_until_stopped()
-        if self._stop_flag:
-            log("Sequence gestopt")
-            return
-
-        log("in beugel")
+        # 6)
+        log("beweeg in houder")
+        self.gateway.change_operation_speed(15)
         self.gateway.amovel(*self.p_in_houder, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        self.gateway.change_operation_speed(100)
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        # 6,5)
+        self.gateway.set_digital_output(1, 0)
+        self.wait_for_operator_confirm(status_callback)
+
+
+        # 7)
+        log("beweeg opzij")
+        self.gateway.amovel(*self.p_opzij, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        # 8)
+        log("home")
+        self.gateway.amovel(*self.p_home, self.velx, self.accx)
         self.gateway.wait_until_stopped()
         if self._stop_flag:
             log("Sequence gestopt")
