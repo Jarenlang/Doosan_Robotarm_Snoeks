@@ -561,7 +561,7 @@ class RobotGUI:
             messagebox.showwarning(
                 "Robot disabled",
                 "De fysieke schakelaar staat uit.\n"
-                "Zet de schakelaar op AAN voordat je de robot beweegt."
+                "Zet de schakelaar AAN voordat je de robot beweegt."
             )
             return False
         return True

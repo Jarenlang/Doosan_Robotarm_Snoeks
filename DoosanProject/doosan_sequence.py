@@ -12,6 +12,8 @@ doosan_sequence.py
     Of met posities uit config:
     self.gateway.amovel(*self.p_home, self.velx, self.accx)     Je kan ook waarden opslaan in de Config.json bestand. Die kun je dan aanroepen in de sequence (bijvoorbeeld handig als je een plek vaker nodig hebt.
     self.gateway.wait_until_stopped()                           zie bovenstaande opmerking
+    
+    self.sensor_amovel(base_pos=self.ppick, direction="z-", pre_distance=250.0, force_limit=30.0, statuscallback=logmsg)        Hiermee kan de robot naar beneden bewegen totdat de robot iets raakt.
 
 - Digitale IO:
     self.gateway.set_digital_output(index, value)               Hiermee kun je een Digital Output (index) aan of uit zetten (met Value 1 = hoog, 0 = laag)
@@ -63,6 +65,10 @@ class RobotProgram:
         self.p_voor_beugel = self.config.get("p_voor_beugel")
         self.p_in_houder = self.config.get("p_in_houder")
         self.p_opzij = self.config.get("p_opzij")
+        self.p_armrest_pick = self.config.get("p_armrest_pick")
+        self.p_armrest_tussenstop = self.config.get("p_armrest_tussenstop")
+        self.p_armrest_infront = self.config.get("p_armrest_infront")
+        self.p_armrest_inframe = self.config.get("p_armrest_inframe")
         self._stop_flag = False
 
         # QR / product flags
@@ -88,6 +94,11 @@ class RobotProgram:
         self.config["p_voor_beugel"] = self.p_voor_beugel
         self.config["p_in_houder"] = self.p_in_houder
         self.config["p_opzij"] = self.p_opzij
+        self.config["p_armrest_pick"] = self.p_armrest_pick
+        self.config["p_armrest_tussenstop"] = self.p_armrest_tussenstop
+        self.config["p_armrest_infront"] = self.p_armrest_infront
+        self.config["p_armrest_inframe"] = self.p_armrest_inframe
+
 
         # eventueel ook IP en poort opslaan
         self.config["robot_ip"] = self.gateway.ip
@@ -104,6 +115,88 @@ class RobotProgram:
         """Externe stopaanvraag (bijv. vanuit GUI)."""
         self._stop_flag = True
         self.gateway.stop()
+
+    def sensor_amovel(self, base_pos, direction="z-", pre_distance=250.0, force_limit=30.0, statuscallback=None):
+
+        def logmsg(msg: str):
+            print(msg)
+            if statuscallback:
+                statuscallback(msg)
+
+        self._stop_flag = False
+
+        # Richtingsvector
+        dx, dy, dz = 0.0, 0.0, 0.0
+        if direction == "x+":
+            dx = 1.0
+        elif direction == "x-":
+            dx = -1.0
+        elif direction == "y+":
+            dy = 1.0
+        elif direction == "y-":
+            dy = -1.0
+        elif direction == "z+":
+            dz = 1.0
+        elif direction == "z-":
+            dz = -1.0
+        else:
+            logmsg(f"Ongeldige richting: {direction}")
+            return
+
+        bx, by, bz, brx, bry, brz = base_pos
+
+        # Doelpositie: 250 mm in één keer in gekozen richting
+        target = [
+            bx + dx * pre_distance,
+            by + dy * pre_distance,
+            bz + dz * pre_distance,
+            brx, bry, brz,
+        ]
+
+        self.gateway.change_operation_speed(20)
+        logmsg(f"sensor_amovel: beweeg in één keer naar {target}")
+        self.gateway.amovel(*target, 20, 1000)
+        if self._stop_flag:
+            logmsg("Sequence gestopt voor force-check.")
+            return
+
+        # Force monitoren; bij overschrijding direct stoppen en terug
+        logmsg(f"sensor_amovel: force-monitor starten, limiet {force_limit} N")
+        while not self._stop_flag:
+            try:
+                force_value = self.gateway.get_tool_force(0)
+            except Exception as e:
+                logmsg(f"Fout bij uitlezen force: {e}")
+                self._stop_flag = True
+                self.gateway.stop()
+                force_value = None
+
+            if force_value is not None:
+                logmsg(f"Huidige force: {force_value:.2f} N")
+                if force_value >= force_limit:
+                    logmsg("Force-limiet bereikt, stuur stop en terug naar vorige coordinaat.")
+                    try:
+                        # directe stop
+                        self.gateway.stop()
+                    except Exception as e:
+                        logmsg(f"Fout bij stop-commando: {e}")
+                    break
+
+        # DO2 aan
+        try:
+            self.gateway.set_digital_output(2, 1)  # DO2 hoog [file:1][file:3]
+            logmsg("DO2 = 1 gezet.")
+        except Exception as e:
+            logmsg(f"Fout bij DO2 zetten: {e}")
+
+        # Terug naar oorspronkelijke (base) positie in één beweging
+        self.gateway.change_operation_speed(self.operation_speed)
+        up_target = [bx, by, bz, brx, bry, brz]
+        logmsg(f"sensor_amovel: terug naar vorige coordinaat {up_target}")
+        self.gateway.amovel(*up_target, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        logmsg("sensor_amovel: klaar.")
+
 
     def wait_for_operator_confirm(self, statuscallback=None):
         if statuscallback:
@@ -143,7 +236,6 @@ class RobotProgram:
         Begin hieronder met het coderen van de sequence-functie:
         """
 
-        # 1) Naar home
         log("Naar home")
         self.gateway.amovel(*self.p_home, self.velx, self.accx)
         self.gateway.wait_until_stopped()
@@ -151,8 +243,64 @@ class RobotProgram:
             log("Sequence gestopt")
             return
 
+        log("Naar pick armrest")
+        self.gateway.amovel(*self.p_armrest_pick, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        self.sensor_amovel(base_pos=self.p_armrest_pick, direction="z-", pre_distance=250.0, force_limit=7)
+
+        log("Naar tussenstop armrest")
+        self.gateway.amovel(*self.p_armrest_tussenstop, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        log("Naar infront armrest")
+        self.gateway.amovel(*self.p_armrest_infront, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        log("Naar inframe armrest")
+        self.gateway.amovel(*self.p_armrest_inframe, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        self.gateway.set_digital_output(2, 0)
+        time.sleep(0.2)
+
+        log("Naar tussenstop armrest")
+        self.gateway.amovel(*self.p_armrest_tussenstop, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        log("Naar pick armrest")
+        self.gateway.amovel(*self.p_armrest_pick, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        log("Naar home")
+        self.gateway.amovel(*self.p_home, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        #Sequence voor het oppakken van de buckles
+        
         # 2) Naar pick
-        log("Naar pick")
+        log("Naar pick buckle")
         self.gateway.amovel(*self.p_pick, self.velx, self.accx)
         self.gateway.wait_until_stopped()
         if self._stop_flag:
@@ -160,7 +308,7 @@ class RobotProgram:
             return
 
         # 3) Naar place
-        log("naar beneden")
+        log("naar aside")
         self.gateway.change_operation_speed(15)
         self.gateway.amovel(*self.p_aside, self.velx, self.accx)
         self.gateway.wait_until_stopped()
