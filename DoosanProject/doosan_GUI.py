@@ -595,6 +595,7 @@ class RobotGUI:
         # 003 -> gordelspoelen
         if suffix == "001":
             self.program.do_buckles = True
+            self.program.do_gordels = True
         elif suffix == "002":
             self.program.do_armsteunen = True
         elif suffix == "003":

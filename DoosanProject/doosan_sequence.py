@@ -69,17 +69,24 @@ class RobotProgram:
             log("Sequence gestopt")
             return
 
-        # 2) Naar pick
-        log("Naar pick buckle")
-        self.gateway.amovel(*self.p_pick, self.velx, self.accx)
+        log("Naar tussenstop")
+        self.gateway.amovel(*self.p_buckle_tussen, self.velx, self.accx)
         self.gateway.wait_until_stopped()
         if self._stop_flag:
             log("Sequence gestopt")
             return
 
-        # 3) Naar place
-        log("naar aside")
+        # 2) Naar
+        log("Naar aside")
         self.gateway.amovel(*self.p_aside, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        # 3) Naar
+        log("naar pick")
+        self.gateway.amovel(*self.p_pick, self.velx, self.accx)
         self.gateway.wait_until_stopped()
         if self._stop_flag:
             log("Sequence gestopt")
@@ -225,6 +232,80 @@ class RobotProgram:
 
         log("Gesp pickup")
         self.gateway.amovel(*self.p_gesp_pickup, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        log("Gesp down")
+        self.gateway.amovel(*self.p_gesp_down, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        self.gateway.set_digital_output(1, 1)
+
+        log("Gesp tussen pos")
+        self.gateway.amovel(*self.p_gesp_tussenpositie, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        log("Gesp door frame")
+        self.gateway.amovel(*self.p_gesp_door_frame, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        log("Gesp boven gat?")
+        self.gateway.amovel(*self.p_gesp_hoogte_gat, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        log("Gesp gesp voor gat")
+        self.gateway.amovel(*self.p_gesp_voor_gat, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        log("Gesp gesp boven gat")
+        self.gateway.amovel(*self.p_gesp_boven_gat, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        log("Gesp gesp in gat")
+        self.gateway.amovel(*self.p_gesp_in_gat, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        self.gateway.set_digital_output(1, 0)
+
+        log("Gesp gesp is los")
+        self.gateway.amovel(*self.p_gesp_los, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        log("Gesp gesp weg")
+        self.gateway.amovel(*self.p_gesp_weg, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        log("Gesp home")
+        self.gateway.amovel(*self.p_home, self.velx, self.accx)
         self.gateway.wait_until_stopped()
         if self._stop_flag:
             log("Sequence gestopt")
