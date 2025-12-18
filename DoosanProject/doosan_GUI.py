@@ -28,9 +28,7 @@ def setup_snoeks_style(root):
 
     # Frames
     style.configure("Snoeks.TFrame", background=Snoeks_Dark2)
-
     style.configure("Snoeks.TLabelframe", background=Snoeks_Dark2, foreground=Snoeks_Text)
-
     style.configure("Snoeks.TLabelframe.Label", background=Snoeks_Dark2, foreground=Snoeks_Text)
 
     # Labels
@@ -97,7 +95,6 @@ class RobotGUI:
         self.gateway = DoosanGatewayClient()
         self.program = RobotProgram(self.gateway)
         self.sequence_thread = None
-
         self._io_thread = None
         self._io_stop = threading.Event()
         self._io_error_reported = set()
@@ -106,19 +103,34 @@ class RobotGUI:
         cfg = load_config()
         default_ip = cfg.get("robot_ip", ROBOT_IP)
 
-        # Connect-regel
-        top_frame = ttk.Frame(root, padding=10, style="Snoeks.TFrame")
-        top_frame.pack(fill="x")
-        ttk.Label(top_frame, text="Robot IP:", style="Snoeks.TLabel").grid(row=0, column=0, sticky="w")
+        # ------------ NIEUWE LAYOUT-CONTAINER ------------
+        main_frame = ttk.Frame(root, style="Snoeks.TFrame")
+        main_frame.pack(fill="both", expand=True)
 
+        left_frame = ttk.Frame(main_frame, style="Snoeks.TFrame")
+        left_frame.grid(row=0, column=0, sticky="nsew")
+
+        right_frame = ttk.Frame(main_frame, style="Snoeks.TFrame")
+        right_frame.grid(row=0, column=1, sticky="nsew")
+
+        main_frame.columnconfigure(0, weight=0)   # linkerkolom vaste/kleine breedte
+        main_frame.columnconfigure(1, weight=1)   # rechterkolom groeit mee
+        main_frame.rowconfigure(0, weight=1)
+
+        # ------------ LINKERKANT: CONNECT / PARAMS / CONTROL / IO ------------
+
+        # Connect-regel
+        top_frame = ttk.Frame(left_frame, padding=10, style="Snoeks.TFrame")
+        top_frame.pack(fill="x")
+
+        ttk.Label(top_frame, text="Robot IP:", style="Snoeks.TLabel").grid(row=0, column=0, sticky="w")
         self.ip_var = tk.StringVar(value=default_ip)
         ttk.Entry(top_frame, textvariable=self.ip_var, width=16, style="SnoeksBlack.TEntry").grid(row=0, column=1, sticky="w")
-
         self.btn_connect = ttk.Button(top_frame, text="Connect", command=self.on_connect, style="Snoeks.TButton")
         self.btn_connect.grid(row=0, column=2, padx=5)
 
         # Parameters
-        param_frame = ttk.LabelFrame(root, text="Parameters", padding=10, style="Snoeks.TFrame")
+        param_frame = ttk.LabelFrame(left_frame, text="Parameters", padding=10, style="Snoeks.TFrame")
         param_frame.pack(fill="x", padx=10, pady=5)
 
         self.var_op_speed = tk.DoubleVar(value=self.program.operation_speed)
@@ -130,34 +142,83 @@ class RobotGUI:
 
         ttk.Label(param_frame, text="velx").grid(row=2, column=0, sticky="w")
         ttk.Entry(param_frame, textvariable=self.var_velx, width=8, style="SnoeksBlack.TEntry").grid(row=2, column=2, sticky="w")
+
         ttk.Label(param_frame, text="accx").grid(row=3, column=0, sticky="w")
         ttk.Entry(param_frame, textvariable=self.var_accx, width=8, style="SnoeksBlack.TEntry").grid(row=3, column=2, sticky="w")
 
-        # Apply-knop voor parameters
         self.btn_apply = ttk.Button(param_frame, text="Apply parameters", command=self.on_apply_params, style="Snoeks.TButton")
         self.btn_apply.grid(row=4, column=0, columnspan=4, pady=(8, 0))
 
-        # Start/Stop/Home/Exit + sequence status
-        ctrl_frame = ttk.LabelFrame(root, text="Control", padding=10, style="Snoeks.TLabelframe")
+        # Control
+        ctrl_frame = ttk.LabelFrame(left_frame, text="Control", padding=10, style="Snoeks.TLabelframe")
         ctrl_frame.pack(fill="x", padx=10, pady=5)
 
-        self.btn_start = ttk.Button(ctrl_frame,text="Start sequence",command=self.on_start_sequence,state="disabled",style="SnoeksPrimary.TButton",)
-        self.btn_start.grid(row=0, column=0, padx=5)
+        # knoppen netjes in een grid, alle kolommen gelijk laten schalen
+        for col in range(4):
+            ctrl_frame.columnconfigure(col, weight=1)
 
-        self.btn_stop = ttk.Button(ctrl_frame,text="Stop",command=self.on_stop,state="disabled",style="Snoeks.TButton",)
-        self.btn_stop.grid(row=0, column=1, padx=5)
+        btn_width = 14  # uniforme knopbreedte
 
-        self.btn_home = ttk.Button(ctrl_frame,text="Home",command=self.on_home,state="disabled",style="Snoeks.TButton",)
-        self.btn_home.grid(row=0, column=2, padx=5)
+        self.btn_start = ttk.Button(
+            ctrl_frame,
+            text="Start sequence",
+            command=self.on_start_sequence,
+            state="disabled",
+            style="SnoeksPrimary.TButton",
+            width=btn_width,
+        )
+        self.btn_start.grid(row=0, column=0, padx=5, pady=5, sticky="ew")
 
-        self.btn_exit = ttk.Button(ctrl_frame, text="Exit", command=self.on_exit, style="Snoeks.TButton",)
-        self.btn_exit.grid(row=0, column=3, padx=5)
+        self.btn_stop = ttk.Button(
+            ctrl_frame,
+            text="Stop",
+            command=self.on_stop,
+            state="disabled",
+            style="Snoeks.TButton",
+            width=btn_width,
+        )
+        self.btn_stop.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
 
-        self.btn_test_qr = ttk.Button(ctrl_frame, text="Test QR", command=self.on_test_qr, style="Snoeks.TButton")
-        self.btn_test_qr.grid(row=1, column=0, padx=5, pady=5)
+        self.btn_home = ttk.Button(
+            ctrl_frame,
+            text="Home",
+            command=self.on_home,
+            state="disabled",
+            style="Snoeks.TButton",
+            width=btn_width,
+        )
+        self.btn_home.grid(row=0, column=2, padx=5, pady=5, sticky="ew")
 
-        self.btn_test_bar = ttk.Button( ctrl_frame, text="Test barcode", command=self.on_test_barcode,style="Snoeks.TButton")
-        self.btn_test_bar.grid(row=1, column=1, padx=5, pady=5)
+        self.btn_exit = ttk.Button(
+            ctrl_frame,
+            text="Exit",
+            command=self.on_exit,
+            style="Snoeks.TButton",
+            width=btn_width,
+        )
+        self.btn_exit.grid(row=1, column=0, padx=5, pady=5, sticky="ew")
+
+        self.btn_test_qr = ttk.Button(
+            ctrl_frame,
+            text="Test QR",
+            command=self.on_test_qr,
+            style="Snoeks.TButton",
+            width=btn_width,
+        )
+        self.btn_test_qr.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
+
+        self.btn_test_bar = ttk.Button(
+            ctrl_frame,
+            text="Test barcode",
+            command=self.on_test_barcode,
+            style="Snoeks.TButton",
+            width=btn_width,
+        )
+        self.btn_test_bar.grid(row=1, column=2, padx=5, pady=5, sticky="ew")
+
+        # optioneel: ruimte reserveren voor andere knoppen of gewoon leeg laten
+        ctrl_frame.grid_columnconfigure(2, weight=1)
+        ctrl_frame.grid_columnconfigure(3, weight=1)
 
         ToolTip(self.btn_test_qr, "Scan alleen een QR-code, log naar scanned.json.")
         ToolTip(self.btn_test_bar, "Scan alleen een barcode, log naar scanned.json.")
@@ -168,78 +229,139 @@ class RobotGUI:
         ToolTip(self.btn_apply, "Stuur de parameters naar de robot en sla ze op.")
         ToolTip(self.btn_exit, "Sluit de applicatie.")
 
-        # Opvallend sequence-state vakje
+        # Sequence-state vakje blijft gekoppeld aan ctrl_frame
         self.seq_state_var = tk.StringVar(value="")
         self.seq_state_frame = ttk.Frame(ctrl_frame, padding=6, style="Snoeks.TFrame")
-        self.seq_state_label = ttk.Label(self.seq_state_frame,textvariable=self.seq_state_var,style="Snoeks.TLabel",)
+        self.seq_state_label = ttk.Label(
+            self.seq_state_frame,
+            textvariable=self.seq_state_var,
+            style="Snoeks.TLabel",
+        )
         self.seq_state_label.pack()
 
-        # IO (Digital I/O)
-        io_frame = ttk.LabelFrame(root, text="Digital IO", padding=10, style="Snoeks.TLabelframe")
+        # Digital IO
+        io_frame = ttk.LabelFrame(left_frame, text="Digital IO", padding=10, style="Snoeks.TLabelframe")
         io_frame.pack(fill="x", padx=10, pady=5)
 
-        self.num_do = 16  # DO1..DO16
-        self.num_di = 16  # DI1..DI16
+        self.num_do = 16
+        self.num_di = 16
 
         ttk.Label(io_frame, text="Outputs (DO)", style="Snoeks.TLabel").grid(row=0, column=0, sticky="w")
         ttk.Label(io_frame, text="Inputs (DI)", style="Snoeks.TLabel").grid(row=2, column=0, sticky="w")
 
-        # DO: checkboxen om outputs te zetten
         self.do_vars = []
         for i in range(1, self.num_do + 1):
             var = tk.IntVar(value=0)
-            cb = ttk.Checkbutton( io_frame, text=str(i), variable=var, command=lambda idx=i, v=var: self._on_do_toggled(idx, v), style="Snoeks.TCheckbutton" if "Snoeks.TCheckbutton" in ttk.Style().theme_names() else "TCheckbutton")
+            cb = ttk.Checkbutton(
+                io_frame,
+                text=str(i),
+                variable=var,
+                command=lambda idx=i, v=var: self._on_do_toggled(idx, v),
+                style="Snoeks.TCheckbutton"
+                if "Snoeks.TCheckbutton" in ttk.Style().theme_names()
+                else "TCheckbutton",
+            )
             cb.grid(row=1, column=1 + i, padx=2)
             self.do_vars.append(var)
 
-        # DI: labels die alleen status tonen
         self.di_labels = []
         for i in range(1, self.num_di + 1):
-            lbl = ttk.Label(io_frame, text=f"{i}: ?", style="Snoeks.TLabel")
+            lbl = ttk.Label(io_frame, text=f"DI{i}: ?", style="Snoeks.TLabel")
             lbl.grid(row=3, column=1 + i, padx=2)
             self.di_labels.append(lbl)
 
-        # Quick buttons voor IO-patronen
         quick_frame = ttk.Frame(io_frame, style="Snoeks.TFrame")
         quick_frame.grid(row=4, column=0, columnspan=1 + self.num_do, sticky="w", pady=(5, 0))
 
         btn_all_off = ttk.Button(
-            quick_frame, text="All DO off",
-            command=self._all_do_off, style="Snoeks.TButton"
+            quick_frame,
+            text="All DO off",
+            command=self._all_do_off,
+            style="Snoeks.TButton",
         )
         btn_all_off.pack(side="left", padx=(0, 5))
 
         btn_reset_lamps = ttk.Button(
-            quick_frame, text="Reset lamps",
-            command=self._reset_lamps, style="Snoeks.TButton"
+            quick_frame,
+            text="Reset lamps",
+            command=self._reset_lamps,
+            style="Snoeks.TButton",
         )
         btn_reset_lamps.pack(side="left")
 
-        # Status
-        status_frame = ttk.LabelFrame(root, text="Status", padding=10, style="Snoeks.TLabelframe")
-        status_frame.pack(fill="both", expand=True, padx=10, pady=5)
-
-        self.status_text = tk.Text(status_frame, height=10, bg=Snoeks_Dark, fg="white", insertbackground="white", relief="flat")
-        self.status_text.pack(fill="both", expand=True)
+        # Force display
+        force_frame = ttk.LabelFrame(left_frame, text="Force", padding=10, style="Snoeks.TLabelframe")
+        force_frame.pack(fill="x", padx=10, pady=(0, 5))
 
         self.forcevar = tk.StringVar(value="Force: ? N")
-        self.forcelabel = ttk.Label(status_frame, textvariable=self.forcevar, style="Snoeks.TLabel")
-        self.forcelabel.pack(anchor="w", pady=2)
+        self.forcelabel = ttk.Label(force_frame, textvariable=self.forcevar, style="Snoeks.TLabel")
+        self.forcelabel.pack(anchor="w")
 
-        # Status-filters
+        # Logo links onderin
+        # container helemaal onderaan links
+        logo_frame = ttk.Frame(left_frame, style="Snoeks.TFrame")
+        logo_frame.pack(side="bottom", fill="x", padx=10, pady=10)
+
+        try:
+            # basisafbeelding laden (zelfde bestand als window-icoon)
+            original_logo = tk.PhotoImage(file="Snoeks.png")
+            self._original_logo = original_logo  # referentie bewaren
+
+            # doelbreedte (in pixels) voor in de hoek
+            target_width = 150
+            w = original_logo.width()
+            h = original_logo.height()
+            scale = int(w / target_width)  # integer factor voor subsample
+
+            # kleiner maken met subsample zodat het netjes schaalt
+            logo_small = original_logo.subsample(scale)
+            self._logo_small = logo_small  # ook referentie bewaren
+
+            self.logo_label = ttk.Label(logo_frame, image=logo_small, style="Snoeks.TLabel")
+            self.logo_label.pack(anchor="w")
+        except Exception as e:
+            # Als het logo niet geladen kan worden, gewoon niets tonen
+            print(f"Kon logo niet laden: {e}")
+
+        # ------------ RECHTERKANT: STATUS / TERMINAL ------------
+
+        status_frame = ttk.LabelFrame(right_frame, text="Status", padding=10, style="Snoeks.TLabelframe")
+        status_frame.pack(fill="both", expand=True, padx=10, pady=5)
+
+        self.status_text = tk.Text(
+            status_frame,
+            height=10,
+            bg=Snoeks_Dark,
+            fg="white",
+            insertbackground="white",
+            relief="flat",
+        )
+        self.status_text.pack(fill="both", expand=True)
+
         filter_frame = ttk.Frame(status_frame, style="Snoeks.TFrame")
         filter_frame.pack(fill="x", pady=(5, 0))
 
         self.var_filter_errors = tk.BooleanVar(value=False)
         self.var_filter_seq = tk.BooleanVar(value=False)
 
-        chk_errors = ttk.Checkbutton(filter_frame, text="Toon alleen fouten", variable=self.var_filter_errors, style="TCheckbutton")
+        chk_errors = ttk.Checkbutton(
+            filter_frame,
+            text="Toon alleen fouten",
+            variable=self.var_filter_errors,
+            style="TCheckbutton",
+        )
         chk_errors.pack(side="left", padx=(0, 10))
 
-        chk_seq = ttk.Checkbutton(filter_frame, text="Toon alleen sequence-status", variable=self.var_filter_seq, style="TCheckbutton")
+        chk_seq = ttk.Checkbutton(
+            filter_frame,
+            text="Toon alleen sequence-status",
+            variable=self.var_filter_seq,
+            style="TCheckbutton",
+        )
         chk_seq.pack(side="left", padx=(0, 10))
 
         self.append_status("Klaar. Verbind met de robot.")
+
         self.root.protocol("WM_DELETE_WINDOW", self.on_exit)
         self.root.bind_all("<Control-r>", self._on_rickroll)
         self.root.bind_all("<Control-R>", self._on_rickroll)
@@ -351,7 +473,6 @@ class RobotGUI:
         t.start()
 
     def _update_status_from_robot(self):
-        """Start een achtergrondthread die periodiek DI + status ophaalt."""
         # voorkom dat er meerdere threads tegelijk draaien
         if hasattr(self, "_io_thread") and self._io_thread and self._io_thread.is_alive():
             return
@@ -386,6 +507,7 @@ class RobotGUI:
 
                                     def logerr(i=i, eio=eio):
                                         self.append_status(f"DI{i} leesfout: {eio}")
+                                        self._set_disconnected_state()
 
                                     self.root.after(0, logerr)
                                 if self._is_connection_lost_error(eio):
@@ -449,16 +571,44 @@ class RobotGUI:
         if not self._check_robot_enabled_or_warn():
             return
 
-        """result = scan_qr_with_camera()
-        if result is None:
-            messagebox.showerror("QR-fout", "Geen geldige QR-code gevonden of niet in database.")
+            # Lees de ruwe QR-code, bijv. 'V006-001'
+        code = scan_qr_only()
+        if code is None:
+            messagebox.showerror("QR-fout", "Geen geldige QR-code gevonden.")
             return
 
-        self.program.do_gordels = result in (1, 2)
-        self.program.do_armsteunen = result in (2, 3)
-        self.program.do_seatbelts = (result in (1, 2))
+        # Probeer het deel na het streepje te pakken: '001', '002', '003', '004'
+        try:
+            suffix = code.split("-")[1]
+        except IndexError:
+            messagebox.showerror("QR-fout", f"Onbekend QR-formaat: {code}")
+            return
 
-        self.append_status(f"QR-code resultaat: {result} " f"(gordels={self.program.do_gordels}, " f"armsteunen={self.program.do_armsteunen})")"""
+        # Reset alle flags eerst
+        self.program.do_gordels = False
+        self.program.do_armsteunen = False
+        self.program.do_buckles = False
+
+        # Mapping zoals jij wilt:
+        # 001 -> seatbelt sequence
+        # 002 -> armrest
+        # 003 -> gordelspoelen
+        if suffix == "001":
+            self.program.do_buckles = True
+        elif suffix == "002":
+            self.program.do_armsteunen = True
+        elif suffix == "003":
+            self.program.do_gordels = True
+        else:
+            messagebox.showerror("QR-fout", f"Onbekende productcode: {suffix}")
+            return
+
+        self.append_status(
+            f"QR-code: {code} (suffix={suffix}, "
+            f"gordels={self.program.do_gordels}, "
+            f"armsteunen={self.program.do_armsteunen}, "
+            f"buckles={self.program.do_buckles})"
+        )
 
         def run_seq():
             try:
@@ -484,8 +634,9 @@ class RobotGUI:
 
     def on_stop(self):
         try:
-            self.append_status("Stop aangevraagd.")
-            self.program.request_stop()
+            self.append_status("Stop gestart.")
+            _stop_flag = True
+            self.gateway.stop()
         except Exception as e:
             self.append_status(f"Stop fout: {e}")
             if self.gateway.sock is None:
@@ -591,5 +742,10 @@ class RobotGUI:
 
 if __name__ == "__main__":
     root = tk.Tk()
+    try:
+        root.state("zoomed")  # Windows
+    except Exception:
+        root.attributes("-zoomed", True)  # Linux
     gui = RobotGUI(root)
     root.mainloop()
+

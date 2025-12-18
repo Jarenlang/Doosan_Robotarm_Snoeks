@@ -4,6 +4,7 @@ import json
 import os
 
 CONFIG_FILE = "config.json"
+COORD_FILE = "coordinates.json"
 
 def load_config():
     if not os.path.exists(CONFIG_FILE):
@@ -25,6 +26,15 @@ def load_config():
     with open(CONFIG_FILE, "r", encoding="utf-8") as f:
         return json.load(f)
 
+def load_coordinates() -> dict:
+    if not os.path.exists(COORD_FILE):
+        return {}
+    with open(COORD_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+def save_coordinates(coords: dict) -> None:
+    with open(COORD_FILE, "w", encoding="utf-8") as f:
+        json.dump(coords, f, indent=2)
 
 def save_config(cfg: dict):
     with open(CONFIG_FILE, "w", encoding="utf-8") as f:
@@ -42,6 +52,92 @@ def is_robot_enabled(self) -> bool:
 _config = load_config()
 ROBOT_IP = _config.get("robot_ip")
 PORT = _config.get("port")
+
+
+def sensor_amovel(self, base_pos, direction="z-", pre_distance=250.0, force_limit=30.0, statuscallback=None):
+    def log(msg: str):
+        print(msg)
+        if statuscallback:
+            statuscallback(msg)
+
+    self._stop_flag = False
+
+    # Richtingsvector
+    dx, dy, dz = 0.0, 0.0, 0.0
+    if direction == "x+":
+        dx = 1.0
+    elif direction == "x-":
+        dx = -1.0
+    elif direction == "y+":
+        dy = 1.0
+    elif direction == "y-":
+        dy = -1.0
+    elif direction == "z+":
+        dz = 1.0
+    elif direction == "z-":
+        dz = -1.0
+    else:
+        log(f"Ongeldige richting: {direction}")
+        return
+
+    bx, by, bz, brx, bry, brz = base_pos
+
+    # Doelpositie: 250 mm in één keer in gekozen richting
+    target = [
+        bx + dx * pre_distance,
+        by + dy * pre_distance,
+        bz + dz * pre_distance,
+        brx, bry, brz,
+    ]
+
+    log(f"sensor_amovel: beweeg in één keer naar {target}")
+    self.gateway.amovel(*target, 20, 20)
+    if self._stop_flag:
+        log("Sequence gestopt voor force-check.")
+        return
+
+    # Force monitoren; bij overschrijding direct stoppen en terug
+    log(f"sensor_amovel: force-monitor starten, limiet {force_limit} N")
+    while not self._stop_flag:
+        try:
+            force_value = self.gateway.get_tool_force(0)
+        except Exception as e:
+            log(f"Fout bij uitlezen force: {e}")
+            self._stop_flag = True
+            self.gateway.stop()
+            force_value = None
+
+        if force_value is not None:
+            log(f"Huidige force: {force_value:.2f} N")
+            if force_value >= force_limit:
+                log("Force-limiet bereikt, stuur stop en terug naar vorige coordinaat.")
+                try:
+                    # directe stop
+                    self.gateway.stop()
+                except Exception as e:
+                    log(f"Fout bij stop-commando: {e}")
+                break
+
+    # DO2 aan
+    try:
+        self.gateway.set_digital_output(2, 1)  # DO2 hoog [file:1][file:3]
+        log("DO2 = 1 gezet.")
+    except Exception as e:
+        log(f"Fout bij DO2 zetten: {e}")
+
+    # Terug naar oorspronkelijke (base) positie in één beweging
+    self.gateway.change_operation_speed(self.operation_speed)
+    up_target = [bx, by, bz, brx, bry, brz]
+    log(f"sensor_amovel: terug naar vorige coordinaat {up_target}")
+    self.gateway.amovel(*up_target, self.velx, self.accx)
+    self.gateway.wait_until_stopped()
+    log("sensor_amovel: klaar.")
+
+def apply_parameters(self):
+    """Stuur huidige parameters naar de robot."""
+    self.gateway.change_operation_speed(self.operation_speed)
+    self.gateway.set_velx(self.velx)
+    self.gateway.set_accx(self.accx)
 
 class DoosanGatewayClient:
     def __init__(self, ip: str | None = None, port: int | None = None):
