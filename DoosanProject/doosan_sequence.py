@@ -246,6 +246,13 @@ class RobotProgram:
 
         self.gateway.set_digital_output(1, 1)
 
+        log("Gesp pickup")
+        self.gateway.amovel(*self.p_gesp_pickup, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
         log("Gesp tussen pos")
         self.gateway.amovel(*self.p_gesp_tussenpositie, self.velx, self.accx)
         self.gateway.wait_until_stopped()
@@ -276,6 +283,13 @@ class RobotProgram:
 
         log("Gesp gesp boven gat")
         self.gateway.amovel(*self.p_gesp_boven_gat, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        log("Gesp voor insteek")
+        self.gateway.amovel(*self.p_gesp_voorinsteek, self.velx, self.accx)
         self.gateway.wait_until_stopped()
         if self._stop_flag:
             log("Sequence gestopt")
