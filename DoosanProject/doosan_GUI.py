@@ -90,7 +90,7 @@ class RobotGUI:
             self._icon_img = icon_img
             self.root.iconphoto(False, icon_img)
         except Exception as e:
-            print(f"Kon window-icoon niet laden: {e}")
+            print(f"couldn't load window icon: {e}")
 
         self.gateway = DoosanGatewayClient()
         self.program = RobotProgram(self.gateway)
@@ -220,14 +220,14 @@ class RobotGUI:
         ctrl_frame.grid_columnconfigure(2, weight=1)
         ctrl_frame.grid_columnconfigure(3, weight=1)
 
-        ToolTip(self.btn_test_qr, "Scan alleen een QR-code, log naar scanned.json.")
-        ToolTip(self.btn_test_bar, "Scan alleen een barcode, log naar scanned.json.")
-        ToolTip(self.btn_connect, "Verbind met de robot op het opgegeven IP-adres.")
-        ToolTip(self.btn_start, "Scan QR en start de sequence na operatorbevestiging.")
-        ToolTip(self.btn_stop, "Vraag een stop van de huidige sequence aan.")
-        ToolTip(self.btn_home, "Beweeg de robot naar de HOME-positie.")
-        ToolTip(self.btn_apply, "Stuur de parameters naar de robot en sla ze op.")
-        ToolTip(self.btn_exit, "Sluit de applicatie.")
+        ToolTip(self.btn_test_qr, "only scan a QR-code, logged to scanned.json.")
+        ToolTip(self.btn_test_bar, "only scan a barcode, logged to scanned.json.")
+        ToolTip(self.btn_connect, "Connect to robot on given IP-adres.")
+        ToolTip(self.btn_start, "Scan QR and start de sequence after operator conformation.")
+        ToolTip(self.btn_stop, "Request a stop in the sequence.")
+        ToolTip(self.btn_home, "Move the robot to the HOME-position.")
+        ToolTip(self.btn_apply, "Send parameters to the robot, and store them locally.")
+        ToolTip(self.btn_exit, "Close the application.")
 
         # Sequence-state vakje blijft gekoppeld aan ctrl_frame
         self.seq_state_var = tk.StringVar(value="")
@@ -346,7 +346,7 @@ class RobotGUI:
 
         chk_errors = ttk.Checkbutton(
             filter_frame,
-            text="Toon alleen fouten",
+            text="Only show errora",
             variable=self.var_filter_errors,
             style="TCheckbutton",
         )
@@ -354,13 +354,13 @@ class RobotGUI:
 
         chk_seq = ttk.Checkbutton(
             filter_frame,
-            text="Toon alleen sequence-status",
+            text="Only show sequence states",
             variable=self.var_filter_seq,
             style="TCheckbutton",
         )
         chk_seq.pack(side="left", padx=(0, 10))
 
-        self.append_status("Klaar. Verbind met de robot.")
+        self.append_status("Ready. Connect with the robot.")
 
         self.root.protocol("WM_DELETE_WINDOW", self.on_exit)
         self.root.bind_all("<Control-r>", self._on_rickroll)
@@ -373,7 +373,7 @@ class RobotGUI:
         # Filter: alleen fouten?
         if getattr(self, "var_filter_errors", None) is not None and self.var_filter_errors.get():
             lower = msg.lower()
-            if not any(w in lower for w in ("fout", "error", "verbroken")):
+            if not any(w in lower for w in ("error", "error", "disconnected")):
                 return
 
         # Filter: alleen sequence-status?
@@ -405,9 +405,9 @@ class RobotGUI:
         """Zet de GUI terug in de 'niet verbonden' staat."""
         self.gateway.set_lamp(False, False)
         if reason:
-            self.append_status(f"Verbinding verbroken: {reason}")
+            self.append_status(f"Connection lost: {reason}")
         else:
-            self.append_status("Verbinding verbroken.")
+            self.append_status("Connection lost.")
 
         # knoppen resetten
         self.btn_start.config(state="disabled")
@@ -424,7 +424,7 @@ class RobotGUI:
         self.gateway = DoosanGatewayClient()
         self.program = RobotProgram(self.gateway)
 
-        self.append_status("Klaar. Verbind opnieuw met de robot.")
+        self.append_status("Ready. Reconnect with the robot.")
         self._set_seq_state(None)
 
     def _is_connection_lost_error(self, e: Exception) -> bool:
@@ -453,18 +453,18 @@ class RobotGUI:
                 if ok:
                     try:
                         self.gateway.start_status_poller(interval=0.2)
-                        self.append_status(f"Verbonden met {self.gateway.ip}:{PORT}")
+                        self.append_status(f"connected with {self.gateway.ip}:{PORT}")
                         self.btn_start.config(state="normal")
                         self.btn_stop.config(state="normal")
                         self.btn_home.config(state="normal")
                         self.btn_connect.config(state="disabled")
                         self.program.save_parameters_to_config()
                     except Exception as e2:
-                        messagebox.showerror("Connect error", str(e2))
+                        messagebox.showerror("Connection error", str(e2))
                         self.btn_connect.config(state="normal")
                 else:
                     # bij mislukte verbinding knop weer AAN
-                    messagebox.showerror("Connect error", str(err))
+                    messagebox.showerror("Connection error", str(err))
                     self.btn_connect.config(state="normal")
 
             self.root.after(0, finish)
@@ -489,7 +489,7 @@ class RobotGUI:
                         self._last_gui_status = status
 
                         def upd_status():
-                            self.append_status(f"Robotstatus: {status}")
+                            self.append_status(f"Robot state: {status}")
 
                         self.root.after(0, upd_status)
 
@@ -506,7 +506,7 @@ class RobotGUI:
                                     self._io_error_reported.add(i)
 
                                     def logerr(i=i, eio=eio):
-                                        self.append_status(f"DI{i} leesfout: {eio}")
+                                        self.append_status(f"DI{i} reading error: {eio}")
                                         self._set_disconnected_state()
 
                                     self.root.after(0, logerr)
@@ -539,7 +539,7 @@ class RobotGUI:
                 except Exception as e:
                     # algemene poll-fout: ook maar één keer loggen
                     def log_exc():
-                        self.append_status(f"Statuspoll fout: {e}")
+                        self.append_status(f"Status poll error: {e}")
                     self.root.after(0, log_exc)
 
                 self._io_stop.wait(0.1)
@@ -558,14 +558,14 @@ class RobotGUI:
                 self.program.apply_parameters()
 
             self.program.save_parameters_to_config()
-            self.append_status("Parameters toegepast en/of opgeslagen.")
+            self.append_status("Parameters applied and saved.")
 
         except Exception as e:
             messagebox.showerror("Param error", str(e))
 
     def on_start_sequence(self):
         if self.sequence_thread and self.sequence_thread.is_alive():
-            messagebox.showinfo("Info", "Sequence is al bezig.")
+            messagebox.showinfo("Info", "Sequence is already running.")
             return
 
         if not self._check_robot_enabled_or_warn():
@@ -574,41 +574,41 @@ class RobotGUI:
             # Lees de ruwe QR-code, bijv. 'V006-001'
         code = scan_qr_only()
         if code is None:
-            messagebox.showerror("QR-fout", "Geen geldige QR-code gevonden.")
+            messagebox.showerror("QR-error", "No real QR-code found.")
             return
 
         # Probeer het deel na het streepje te pakken: '001', '002', '003', '004'
         try:
             suffix = code.split("-")[1]
         except IndexError:
-            messagebox.showerror("QR-fout", f"Onbekend QR-formaat: {code}")
+            messagebox.showerror("QR-error", f"Unknown QR-code format: {code}")
             return
 
         # Reset alle flags eerst
-        self.program.do_gordels = False
-        self.program.do_armsteunen = False
-        self.program.do_buckles = False
+        self.program.do_seatbelt = False
+        self.program.do_armrest = False
+        self.program.do_buckle = False
 
         # Mapping zoals jij wilt:
         # 001 -> seatbelt sequence
         # 002 -> armrest
-        # 003 -> gordelspoelen
+        # 003 -> seatbeltpoelen
         if suffix == "001":
-            self.program.do_buckles = True
-            self.program.do_gordels = True
+            self.program.do_buckle = True
+            self.program.do_seatbelt = True
         elif suffix == "002":
-            self.program.do_armsteunen = True
+            self.program.do_armrest = True
         elif suffix == "003":
-            self.program.do_gordels = True
+            self.program.do_seatbelt = True
         else:
-            messagebox.showerror("QR-fout", f"Onbekende productcode: {suffix}")
+            messagebox.showerror("QR-error", f"Unknown product code: {suffix}")
             return
 
         self.append_status(
             f"QR-code: {code} (suffix={suffix}, "
-            f"gordels={self.program.do_gordels}, "
-            f"armsteunen={self.program.do_armsteunen}, "
-            f"buckles={self.program.do_buckles})"
+            f"seatbelt={self.program.do_seatbelt}, "
+            f"armrest={self.program.do_armrest}, "
+            f"buckle={self.program.do_buckle})"
         )
 
         def run_seq():
@@ -616,10 +616,10 @@ class RobotGUI:
                 self.append_status("Sequence start...")
                 self._set_seq_state("Sequence running")
                 self.program.sequence_pick_and_place(self.append_status)
-                self.append_status("Sequence klaar.")
+                self.append_status("Sequence done.")
                 self._set_seq_state("Sequence done")
             except Exception as e:
-                self.append_status(f"Fout in sequence: {e}")
+                self.append_status(f"Error in sequence: {e}")
                 self._set_seq_state("Sequence error")
                 if self._is_connection_lost_error(e):
                     self.root.after(0, lambda: self._set_disconnected_state(str(e)))
@@ -635,11 +635,11 @@ class RobotGUI:
 
     def on_stop(self):
         try:
-            self.append_status("Stop gestart.")
+            self.append_status("Stop.")
             _stop_flag = True
             self.gateway.stop()
         except Exception as e:
-            self.append_status(f"Stop fout: {e}")
+            self.append_status(f"Stop error: {e}")
             if self.gateway.sock is None:
                 self._set_disconnected_state(str(e))
 
@@ -653,13 +653,13 @@ class RobotGUI:
         try:
             self.program.apply_parameters()
             #self.gateway.set_lamp(False, True)
-            self.append_status("Home-beweging gestart...")
+            self.append_status("Home-movement started...")
             self.gateway.amovel(*self.program.p_home, self.program.velx, self.program.accx)
             self.gateway.wait_until_stopped()
-            self.append_status("Home-beweging klaar.")
+            self.append_status("Home-movement done.")
             #self.gateway.set_lamp(True, False)
         except Exception as e:
-            self.append_status(f"Home fout: {e}")
+            self.append_status(f"Home error: {e}")
             if self._is_connection_lost_error(e):
                 self._set_disconnected_state(str(e))
 
@@ -667,39 +667,39 @@ class RobotGUI:
         val = var.get()
         try:
             if self.gateway.sock is None:
-                self.append_status("Kan DO niet zetten: niet verbonden.")
+                self.append_status("Cannot set DO, robot not connected.")
                 var.set(0)
                 return
             self.gateway.set_digital_output(index, val)  # index = 1..16
             self.append_status(f"DO{index} => {val}")
         except Exception as e:
-            self.append_status(f"DO{index} fout: {e}")
+            self.append_status(f"DO{index} Error: {e}")
             if self._is_connection_lost_error(e):
                 self._set_disconnected_state(str(e))
 
     def _all_do_off(self):
         if self.gateway.sock is None:
-            self.append_status("Kan DO niet resetten: niet verbonden.")
+            self.append_status("Cannot set DO, robot not connected.")
             return
         try:
             for i, var in enumerate(self.do_vars, start=1):
                 self.gateway.set_digital_output(i, 0)
                 var.set(0)
-            self.append_status("Alle DO-uitgangen zijn uit gezet.")
+            self.append_status("All DO-uitgangen turned off.")
         except Exception as e:
-            self.append_status(f"All DO off fout: {e}")
+            self.append_status(f"All DO off error: {e}")
             if self._is_connection_lost_error(e):
                 self._set_disconnected_state(str(e))
 
     def _reset_lamps(self):
         if self.gateway.sock is None:
-            self.append_status("Kan lamps niet resetten: niet verbonden.")
+            self.append_status("Cannot set lights, robot not connected.")
             return
         try:
             # gebruik je backend-config DO's
-            self.append_status("Lampen gereset (READY/MOVE uit).")
+            self.append_status("Lamps Reset (READY/MOVE off).")
         except Exception as e:
-            self.append_status(f"Reset lamps fout: {e}")
+            self.append_status(f"Reset lamps error: {e}")
             if self._is_connection_lost_error(e):
                 self._set_disconnected_state(str(e))
 
@@ -712,8 +712,8 @@ class RobotGUI:
         if not enabled:
             messagebox.showwarning(
                 "Robot disabled",
-                "De fysieke schakelaar staat uit.\n"
-                "Zet de schakelaar AAN voordat je de robot beweegt."
+                "The movement switch is turned off.\n"
+                "Turn the switch ON to be able to let the robot move."
             )
             return False
         return True
@@ -727,18 +727,18 @@ class RobotGUI:
     def on_test_qr(self):
         code = scan_qr_only()
         if code:
-            messagebox.showinfo("Scan gelukt", f"QR-code: {code}")
-            self.append_status(f"Testscan QR: {code}")
+            messagebox.showinfo("Scan successful", f"QR-code: {code}")
+            self.append_status(f"Test scan QR: {code}")
         else:
-            messagebox.showwarning("Geen code", "Er is geen geldige QR-code gevonden.")
+            messagebox.showwarning("No data", "No real QR code detected.")
 
     def on_test_barcode(self):
         code = scan_barcode_only()
         if code:
-            messagebox.showinfo("Scan gelukt", f"Barcode: {code}")
-            self.append_status(f"Testscan barcode: {code}")
+            messagebox.showinfo("Scan successful", f"Barcode: {code}")
+            self.append_status(f"Test scan barcode: {code}")
         else:
-            messagebox.showwarning("Geen code", "Er is geen geldige barcode gevonden.")
+            messagebox.showwarning("No code", "No real QR code detected.")
 
 
 if __name__ == "__main__":

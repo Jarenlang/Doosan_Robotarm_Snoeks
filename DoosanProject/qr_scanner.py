@@ -5,15 +5,15 @@ import pandas as pd
 from datetime import datetime
 from pyzbar.pyzbar import decode
 
-DB = pd.read_excel("producten.xlsx")
+DB = pd.read_excel("products.xlsx")
 SCANNED_FILE = "scanned.json"
 
-def combine_features(has_gordels: bool, has_armsteunen: bool) -> int:
-    if has_gordels and has_armsteunen:
+def combine_features(has_buckle: bool, has_armrest: bool) -> int:
+    if has_buckle and has_armrest:
         return 2
-    elif has_gordels and not has_armsteunen:
+    elif has_buckle and not has_armrest:
         return 1
-    elif not has_gordels and has_armsteunen:
+    elif not has_buckle and has_armrest:
         return 3
     else:
         return 4
@@ -111,9 +111,9 @@ def scan_qr_with_camera():
         return None
 
     row = product.iloc[0]
-    has_armsteunen = int(row["Armsteun"]) == 1
-    has_gordels = int(row["Gordels"]) == 1
-    result = combine_features(has_gordels, has_armsteunen)
+    has_armrest = int(row["armrest"]) == 1
+    has_buckle = int(row["buckle"]) == 1
+    result = combine_features(has_buckle, has_armrest)
 
     _append_scan_to_json(qr_data, result)
     return result

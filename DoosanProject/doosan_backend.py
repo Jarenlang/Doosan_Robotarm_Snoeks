@@ -53,8 +53,7 @@ _config = load_config()
 ROBOT_IP = _config.get("robot_ip")
 PORT = _config.get("port")
 
-
-def sensor_amovel(self, base_pos, direction="z-", pre_distance=250.0, force_limit=30.0, statuscallback=None):
+def sensor_amovel(self, base_pos, direction="z-", pre_distance=250.0, force_limit=20.0, statuscallback=None):
     def log(msg: str):
         print(msg)
         if statuscallback:
@@ -90,48 +89,48 @@ def sensor_amovel(self, base_pos, direction="z-", pre_distance=250.0, force_limi
         brx, bry, brz,
     ]
 
-    log(f"sensor_amovel: beweeg in één keer naar {target}")
+    log(f"sensor_amovel: move towards {target}")
     self.gateway.amovel(*target, 20, 20)
     if self._stop_flag:
-        log("Sequence gestopt voor force-check.")
+        log("Sequence stopped for force-check.")
         return
 
     # Force monitoren; bij overschrijding direct stoppen en terug
-    log(f"sensor_amovel: force-monitor starten, limiet {force_limit} N")
+    log(f"sensor_amovel: starting force-monitor, current limit: {force_limit} N")
     while not self._stop_flag:
         try:
             force_value = self.gateway.get_tool_force(0)
         except Exception as e:
-            log(f"Fout bij uitlezen force: {e}")
+            log(f"Error in reading force: {e}")
             self._stop_flag = True
             self.gateway.stop()
             force_value = None
 
         if force_value is not None:
-            log(f"Huidige force: {force_value:.2f} N")
+            log(f"Current force: {force_value:.2f} N")
             if force_value >= force_limit:
-                log("Force-limiet bereikt, stuur stop en terug naar vorige coordinaat.")
+                log("Force-limit reached, send stop command en back to previous coordinate.")
                 try:
                     # directe stop
                     self.gateway.stop()
                 except Exception as e:
-                    log(f"Fout bij stop-commando: {e}")
+                    log(f"Error with stop-command: {e}")
                 break
 
     # DO2 aan
     try:
         self.gateway.set_digital_output(2, 1)  # DO2 hoog [file:1][file:3]
-        log("DO2 = 1 gezet.")
+        log("DO2 = 1.")
     except Exception as e:
-        log(f"Fout bij DO2 zetten: {e}")
+        log(f"Error while setting DO2: {e}")
 
     # Terug naar oorspronkelijke (base) positie in één beweging
     self.gateway.change_operation_speed(self.operation_speed)
     up_target = [bx, by, bz, brx, bry, brz]
-    log(f"sensor_amovel: terug naar vorige coordinaat {up_target}")
+    log(f"sensor_amovel: back to previous coordinate {up_target}")
     self.gateway.amovel(*up_target, self.velx, self.accx)
     self.gateway.wait_until_stopped()
-    log("sensor_amovel: klaar.")
+    log("sensor_amovel: done.")
 
 def apply_parameters(self):
     """Stuur huidige parameters naar de robot."""
@@ -289,7 +288,7 @@ class DoosanGatewayClient:
         - allebei False => DO1=0, DO2=0
         """
         # eerst alles uit
-        self.set_digital_output(self.LAMP_DO_READY, 0)  # +1 omdat robot DO's 1..16 zijn
+        self.set_digital_output(self.LAMP_DO_READY, 0)
         self.set_digital_output(self.LAMP_DO_MOVE, 0)
         if ready:
             self.set_digital_output(self.LAMP_DO_READY, 1)
@@ -302,11 +301,6 @@ class DoosanGatewayClient:
 
     @staticmethod
     def _parse_check_motion_resp(resp: str) -> int | None:
-        """
-        Parseer een antwoordregel van 'check_motion'.
-        Verwacht iets als: 'OK check_motion 0' of 'OK check_motion 1'.
-        Retourneert 0 of 1, of None als het niet te parsen is.
-        """
         if not resp:
             return None
         parts = resp.strip().split()

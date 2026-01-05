@@ -212,9 +212,9 @@ def main():
                     set_digital_output(3, 0)
                     set_digital_output(4, 0)
                 except Exception as e:
-                    tp_log("Fout bij alle outputs uitzetten: {e}")
+                    tp_log("Fout while turning off all DO: {e}")
         except Exception as e:
-            tp_log("Error bij uitlezen blauwe knop: {e}")
+            tp_log("Error while reading blue button: {e}")
 
         tp_log("waiting for connection")
         sock = server_socket_open(PORT)
