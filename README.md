@@ -1,3 +1,5 @@
+# README Snoeks automotive
+
 This repository contains code and configuration used to automate a Doosan collaborative robot arm for production tasks at Snoeks.  
 The focus is on repeatable, safe and maintainable motion programs that integrate with surrounding equipment.
 
@@ -40,36 +42,38 @@ Add or change items here to match your real setup (robot model, controller versi
 ## Usage
 
 Typical workflow:
-  Power on and home the robot according to the Doosan manual.
-  Load the desired task or script from this project on the controller.
-  Adjust any product‑specific parameters (positions, speeds, delays) in the program or parameter file.
-  Test the cycle at reduced speed and with full safety measures in place.
-  Switch to automatic/production mode once validated.
+  - Power on and home the robot according to the Doosan manual.
+  - Load the desired task or script from this project on the controller.
+  - Adjust any product‑specific parameters (positions, speeds, delays) in the program or parameter file.
+  - Test the cycle at reduced speed and with full safety measures in place.
+  - Switch to automatic/production mode once validated.
 
 You can add concrete examples, for instance:
-  Program:  main_snoeks.drl
-  Purpose:  Pick plastic parts from fixture A and place into fixture B
-  Start:    Run → main_snoeks
-  Stops:    Uses digital input DI_1 as part present signal
+  - Program:  main_snoeks.drl
+  - Purpose:  Pick plastic parts from fixture A and place into fixture B
+  - Start:    Run → main_snoeks
+  - Stops:    Uses digital input DI_1 as part present signal
 
-##Project Structure
+## Project Structure
 Adapt this section to your actual folders and files, for example:
+````bash 
   Doosan_Robotarm_Snoeks/
   ├─ programs/        # Main robot programs / DRL scripts
   ├─ config/          # Tool, base and parameter files
   ├─ io/              # I/O configuration or helper scripts
   └─ docs/            # Additional documentation, layouts, etc.
+  ````
   Briefly describe what lives in each directory and which files are the main entry points.
 
-Safety
-  Working with industrial robots is potentially dangerous. Always:
-    Follow the official Doosan safety and installation manuals.
-    Validate all new programs at low speed and with limited workspace.
-    Ensure all safety devices (safety PLC, scanners, emergency stops, fences) are installed and tested.
-    Never run modified programs in production without proper risk assessment.
+## Safety
+Working with industrial robots is potentially dangerous. Always:
+- Follow the official Doosan safety and installation manuals.
+- Validate all new programs at low speed and with limited workspace.
+- Ensure all safety devices (safety PLC, scanners, emergency stops, fences) are installed and tested.
+- Never run modified programs in production without proper risk assessment.
 
-Contact
+## Contact
 For questions or suggestions about this project:
-Author: Eeuwe de Haan
-GitHub: https://github.com/Jarenlang/Doosan_Robotarm_Snoeks
-Email: eeuwedehaan(at)g mail(dot)com
+- Author: Eeuwe de Haan
+- GitHub: https://github.com/Jarenlang/Doosan_Robotarm_Snoeks
+- Email: eeuwedehaan(at)g mail(dot)com
