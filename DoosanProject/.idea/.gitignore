@@ -3,4 +3,14 @@
 /workspace.xml
 # Editor-based HTTP Client requests
 /httpRequests/
-!.idea
+!inspectionProfiles
+!doosanProject.iml
+!misc.xml
+!modules.xml
+!vcs.xml
+!CODE_OF_CONDUCT.md
+!CONTRIBUTING.md
+!LICENSE
+!README
+!SECURITY.md
+!.venv
