@@ -147,8 +147,8 @@ class RobotProgram:
                 statuscallback(msg)
 
         # 1) Naar home
-        log("Naar home")
-        self.gateway.amovel(*self.p_buckle_home, self.velx, self.accx)
+        log("Naar tussentop")
+        self.gateway.amovel(*self.p_armrest_tussenstop, self.velx, self.accx)
         self.gateway.wait_until_stopped()
         if self._stop_flag:
             log("Sequence stopped")
@@ -165,9 +165,17 @@ class RobotProgram:
         # 3) Naar beneden en zuiger aan
         sensor_amovel(self, base_pos=self.p_armrest_pick, direction="z-", pre_distance=250.0, force_limit=9)
 
+        # 2) Naar pick
+        log("Naar pick armrest")
+        self.gateway.amovel(*self.p_armrest_pick, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence stopped")
+            return
+
         # 4) Naar tussenstop
         log("Naar tussenstop armrest")
-        self.gateway.amovel(*self.p_armrest_tussenstop, self.velx, self.accx)
+        self.gateway.amovel(*self.p_armrest_uitbewegen, self.velx, self.accx)
         self.gateway.wait_until_stopped()
         if self._stop_flag:
             log("Sequence stopped")
@@ -345,7 +353,7 @@ class RobotProgram:
         if self.do_buckle:
             self.sequence_seatbelt(statuscallback)
         elif self.do_armrest:
-            self.sequence_armrest(statuscallback)
+           self.sequence_armrest(statuscallback)
         elif self.do_seatbelt:
             self.sequence_seatbeltpoelen(statuscallback)
         else:

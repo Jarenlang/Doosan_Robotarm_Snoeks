@@ -126,9 +126,6 @@ def sensor_amovel(self, base_pos, direction="z-", pre_distance=250.0, force_limi
 
     # Terug naar oorspronkelijke (base) positie in één beweging
     self.gateway.change_operation_speed(self.operation_speed)
-    up_target = [bx, by, bz, brx, bry, brz]
-    log(f"sensor_amovel: back to previous coordinate {up_target}")
-    self.gateway.amovel(*up_target, self.velx, self.accx)
     self.gateway.wait_until_stopped()
     log("sensor_amovel: done.")
 
