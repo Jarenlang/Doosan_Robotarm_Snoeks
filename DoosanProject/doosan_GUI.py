@@ -595,7 +595,6 @@ class RobotGUI:
         # 003 -> seatbeltpoelen
         if suffix == "001":
             self.program.do_buckle = True
-            self.program.do_seatbelt = True
         elif suffix == "002":
             self.program.do_armrest = True
         elif suffix == "003":

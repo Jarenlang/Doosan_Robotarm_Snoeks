@@ -150,7 +150,7 @@ def sensor_amovel(self, base_pos, direction: str = "z-", pre_distance: float = 2
     if return_direction and return_distance > 0.0:
         ret_vec = _dir_to_vector(return_direction)
         if ret_vec is None:
-            log(f"Ongeldige return_direction: {return_direction}, terug naar base_pos.")
+            log(f"invalid return direction: {return_direction}, back to base_pos.")
             ret_target = [bx, by, bz, brx, bry, brz]
         else:
             rdx, rdy, rdz = ret_vec
