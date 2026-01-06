@@ -53,16 +53,12 @@ _config = load_config()
 ROBOT_IP = _config.get("robot_ip")
 PORT = _config.get("port")
 
-def sensor_amovel(self, base_pos, direction="z-", pre_distance=250.0, force_limit=20.0, statuscallback=None):
-    def log(msg: str):
-        print(msg)
-        if statuscallback:
-            statuscallback(msg)
-
-    self._stop_flag = False
-
-    # Richtingsvector
-    dx, dy, dz = 0.0, 0.0, 0.0
+def _dir_to_vector(direction: str):
+    """
+    Converteer een richting-string ("x+", "x-", "y+", "y-", "z+", "z-")
+    naar een (dx, dy, dz) eenheidsvector.
+    """
+    dx = dy = dz = 0.0
     if direction == "x+":
         dx = 1.0
     elif direction == "x-":
@@ -76,26 +72,51 @@ def sensor_amovel(self, base_pos, direction="z-", pre_distance=250.0, force_limi
     elif direction == "z-":
         dz = -1.0
     else:
+        return None
+    return dx, dy, dz
+
+def sensor_amovel(self, base_pos, direction: str = "z-", pre_distance: float = 250.0, force_limit: float = 20.0, return_direction: str | None = None, return_distance: float = 0.0, statuscallback=None,):
+    """
+    Beweeg vanaf base_pos in 'direction' over pre_distance, monitor de kracht
+    en zodra force_limit wordt bereikt: stoppen en óf
+    - terug naar base_pos (standaard), óf
+    - in return_direction over return_distance bewegen.
+    """
+    def log(msg: str):
+        print(msg)
+        if statuscallback:
+            statuscallback(msg)
+
+    # stop-flag gebruiken zoals in de rest van de code
+    self._stop_flag = False
+
+    # Richtingsvector voor neerwaartse (of andere) beweging
+    vec = _dir_to_vector(direction)
+    if vec is None:
         log(f"Ongeldige richting: {direction}")
         return
+    dx, dy, dz = vec
 
     bx, by, bz, brx, bry, brz = base_pos
 
-    # Doelpositie: 250 mm in één keer in gekozen richting
+    # Doelpositie: pre_distance in gekozen richting
     target = [
         bx + dx * pre_distance,
         by + dy * pre_distance,
         bz + dz * pre_distance,
-        brx, bry, brz,
+        brx,
+        bry,
+        brz,
     ]
 
     log(f"sensor_amovel: move towards {target}")
     self.gateway.amovel(*target, 20, 20)
+
     if self._stop_flag:
         log("Sequence stopped for force-check.")
         return
 
-    # Force monitoren; bij overschrijding direct stoppen en terug
+    # Force monitoren
     log(f"sensor_amovel: starting force-monitor, current limit: {force_limit} N")
     while not self._stop_flag:
         try:
@@ -109,25 +130,50 @@ def sensor_amovel(self, base_pos, direction="z-", pre_distance=250.0, force_limi
         if force_value is not None:
             log(f"Current force: {force_value:.2f} N")
             if force_value >= force_limit:
-                log("Force-limit reached, send stop command en back to previous coordinate.")
+                log("Force-limit reached, send stop command.")
                 try:
-                    # directe stop
                     self.gateway.stop()
                 except Exception as e:
                     log(f"Error with stop-command: {e}")
                 break
 
-    # DO2 aan
+    # DO2 aan (zoals in je originele code)
     try:
-        self.gateway.set_digital_output(2, 1)  # DO2 hoog [file:1][file:3]
+        self.gateway.set_digital_output(2, 1)  # DO2 hoog
         log("DO2 = 1.")
     except Exception as e:
         log(f"Error while setting DO2: {e}")
 
-    # Terug naar oorspronkelijke (base) positie in één beweging
+    # Na force: óf speciale offset-beweging, óf terug naar base_pos
+    bx, by, bz, brx, bry, brz = base_pos
+
+    if return_direction and return_distance > 0.0:
+        ret_vec = _dir_to_vector(return_direction)
+        if ret_vec is None:
+            log(f"Ongeldige return_direction: {return_direction}, terug naar base_pos.")
+            ret_target = [bx, by, bz, brx, bry, brz]
+        else:
+            rdx, rdy, rdz = ret_vec
+            ret_target = [
+                bx + rdx * return_distance,
+                by + rdy * return_distance,
+                bz + rdz * return_distance,
+                brx,
+                bry,
+                brz,
+            ]
+            log(f"sensor_amovel: return move to {ret_target}")
+    else:
+        # Standaard gedrag: terug naar base_pos
+        ret_target = [bx, by, bz, brx, bry, brz]
+        log("sensor_amovel: back to base_pos")
+
     self.gateway.change_operation_speed(self.operation_speed)
+    self.gateway.amovel(*ret_target, 20, 20)
     self.gateway.wait_until_stopped()
+
     log("sensor_amovel: done.")
+
 
 def apply_parameters(self):
     """Stuur huidige parameters naar de robot."""
