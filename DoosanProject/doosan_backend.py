@@ -75,32 +75,26 @@ def _dir_to_vector(direction: str):
         return None
     return dx, dy, dz
 
-def sensor_amovel(self, base_pos, direction: str = "z-", pre_distance: float = 250.0, force_limit: float = 20.0, return_direction: str | None = None, return_distance: float = 0.0, statuscallback=None,):
-    """
-    Beweeg vanaf base_pos in 'direction' over pre_distance, monitor de kracht
-    en zodra force_limit wordt bereikt: stoppen en óf
-    - terug naar base_pos (standaard), óf
-    - in return_direction over return_distance bewegen.
-    """
+def sensor_amovel(self,base_pos,direction: str = "z-",pre_distance: float = 250.0,force_limit: float = 20.0,return_direction: str | None = None,return_distance: float = 0.0,statuscallback=None,):
+
     def log(msg: str):
         print(msg)
         if statuscallback:
             statuscallback(msg)
 
-    # stop-flag gebruiken zoals in de rest van de code
     self._stop_flag = False
 
-    # Richtingsvector voor neerwaartse (of andere) beweging
+    # Richtingsvector voor eerste beweging
     vec = _dir_to_vector(direction)
     if vec is None:
-        log(f"Ongeldige richting: {direction}")
+        log(f"Invalid direction: {direction}")
         return
     dx, dy, dz = vec
 
     bx, by, bz, brx, bry, brz = base_pos
 
-    # Doelpositie: pre_distance in gekozen richting
-    target = [
+    # EIND-positie van de eerste move
+    first_end = [
         bx + dx * pre_distance,
         by + dy * pre_distance,
         bz + dz * pre_distance,
@@ -109,8 +103,8 @@ def sensor_amovel(self, base_pos, direction: str = "z-", pre_distance: float = 2
         brz,
     ]
 
-    log(f"sensor_amovel: move towards {target}")
-    self.gateway.amovel(*target, 20, 20)
+    log(f"sensor_amovel: move towards {first_end}")
+    self.gateway.amovel(*first_end, 20, 20)
 
     if self._stop_flag:
         log("Sequence stopped for force-check.")
@@ -137,36 +131,46 @@ def sensor_amovel(self, base_pos, direction: str = "z-", pre_distance: float = 2
                     log(f"Error with stop-command: {e}")
                 break
 
-    # DO2 aan (zoals in je originele code)
+    # DO2 aan
     try:
         self.gateway.set_digital_output(2, 1)  # DO2 hoog
         log("DO2 = 1.")
     except Exception as e:
         log(f"Error while setting DO2: {e}")
 
-    # Na force: óf speciale offset-beweging, óf terug naar base_pos
-    bx, by, bz, brx, bry, brz = base_pos
+    #huidige positie uitlezen
+    try:
+        cur_x, cur_y, cur_z, cur_rx, cur_ry, cur_rz = self.gateway.get_tcp(0)
+        log(
+            f"TCP now at: x={cur_x:.2f}, y={cur_y:.2f}, "
+            f"z={cur_z:.2f}, rx={cur_rx:.2f}, ry={cur_ry:.2f}, rz={cur_rz:.2f}"
+        )
+    except Exception as e:
+        log(f"Error reading TCP pose: {e}")
+        # fallback: gebruik de oude base_pos als het misgaat
+        cur_x, cur_y, cur_z, cur_rx, cur_ry, cur_rz = base_pos
 
+    # Terug-beweging:
     if return_direction and return_distance > 0.0:
         ret_vec = _dir_to_vector(return_direction)
         if ret_vec is None:
             log(f"invalid return direction: {return_direction}, back to base_pos.")
-            ret_target = [bx, by, bz, brx, bry, brz]
+            ret_target = [cur_x, cur_y, cur_z, cur_rx, cur_ry, cur_rz]
         else:
             rdx, rdy, rdz = ret_vec
             ret_target = [
-                bx + rdx * return_distance,
-                by + rdy * return_distance,
-                bz + rdz * return_distance,
-                brx,
-                bry,
-                brz,
+                cur_x + rdx * return_distance,
+                cur_y + rdy * return_distance,
+                cur_z + rdz * return_distance,
+                cur_rx,
+                cur_ry,
+                cur_rz,
             ]
             log(f"sensor_amovel: return move to {ret_target}")
     else:
-        # Standaard gedrag: terug naar base_pos
-        ret_target = [bx, by, bz, brx, bry, brz]
-        log("sensor_amovel: back to base_pos")
+        # Standaard: terug naar gemeten TCP-positie (geen extra offset)
+        ret_target = [cur_x, cur_y, cur_z, cur_rx, cur_ry, cur_rz]
+        log("sensor_amovel: back to measured TCP position")
 
     self.gateway.change_operation_speed(self.operation_speed)
     self.gateway.amovel(*ret_target, 20, 20)
@@ -404,6 +408,24 @@ class DoosanGatewayClient:
                 raise TimeoutError("Robot still moving after wait_until_stopped timeout")
 
             time.sleep(poll_interval)
+
+    def get_tcp(self, ref: int = 0) -> tuple[float, float, float, float, float, float]:
+        """
+        Lees de actuele TCP-positie (posx) van de robot.
+        Retourneert (x, y, z, rx, ry, rz).
+        """
+        resp = self.send_raw(f"gettcp {int(ref)}\n")
+        if not resp:
+            raise RuntimeError("Empty response from gettcp")
+        parts = resp.strip().split()
+        # Verwacht: OK gettcp x y z rx ry rz
+        if len(parts) == 8 and parts[0].upper() == "OK" and parts[1].lower() == "gettcp":
+            try:
+                vals = [float(v) for v in parts[2:8]]
+                return tuple(vals)
+            except ValueError:
+                raise RuntimeError(f"Unexpected gettcp payload {parts[2:]!r} in {resp!r}")
+        raise RuntimeError(f"gettcp error response {resp!r}")
 
     def get_tool_force(self, ref: int = 0) -> float:
         resp = self.send_raw(f"toolforce {int(ref)}")

@@ -176,6 +176,23 @@ def handle_command(sock, line):
         server_socket_write(sock, msg.encode())
         return
 
+    if cmd == "gettcp":
+        # Verwacht: 'gettcp 0' of 'gettcp 1' (ref-frame)
+        # ref = 0: base, ref = 1: tool of ander frame (zie Doosan manual)
+        if len(tokens) != 2:
+            server_socket_write(sock, b"ERR gettcp needs 1 arg\n")
+            return
+        try:
+            ref = int(tokens[1])
+            # DRL-call: get_current_posx(ref) -> [x, y, z, rx, ry, rz]
+            p = get_current_posx(ref)
+            # Stuur 6 waardes in één regel terug
+            msg = "OK gettcp {} {} {} {} {} {}\n".format(p[0], p[1], p[2], p[3], p[4], p[5])
+            server_socket_write(sock, msg.encode())
+        except:
+            server_socket_write(sock, b"ERR gettcp invalid args\n")
+        return
+
     if cmd == "toolforce":
         # Verwacht: 'toolforce 0' of 'toolforce 1' (ref-frame)
         if len(tokens) != 2:
@@ -198,7 +215,7 @@ def handle_command(sock, line):
         return
 
 
-    server_socket_write(sock, b"ERR unknown command\n")
+    server_socket_write(sock, b"ERR unknown command in doosan reciever code\n")
 
 
 def main():
