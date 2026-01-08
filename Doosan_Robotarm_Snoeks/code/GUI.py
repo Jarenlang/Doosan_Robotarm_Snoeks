@@ -158,7 +158,7 @@ class RobotGUI:
         ctrl_frame.pack(fill="x", padx=10, pady=5)
 
         # knoppen netjes in een grid, alle kolommen gelijk laten schalen
-        for col in range(4):
+        for col in range(6):
             ctrl_frame.columnconfigure(col, weight=1)
 
         btn_width = 14  # uniforme knopbreedte
@@ -219,6 +219,20 @@ class RobotGUI:
             width=btn_width,
         )
         self.btn_test_bar.grid(row=1, column=2, padx=5, pady=5, sticky="ew")
+
+        ttk.Label(ctrl_frame, text="Sequence", style="Snoeks.TLabel").grid(
+            row=0, column=3, sticky="w", padx=5
+        )
+        self.seq_choice = tk.StringVar(value="1")
+        self.seq_combo = ttk.Combobox(
+            ctrl_frame,
+            textvariable=self.seq_choice,
+            values=["1", "2", "3"],
+            state="readonly",
+            width=5
+        )
+        self.seq_combo.grid(row=0, column=4, sticky="w", padx=5)
+
 
         # optioneel: ruimte reserveren voor andere knoppen of gewoon leeg laten
         ctrl_frame.grid_columnconfigure(2, weight=1)
@@ -575,6 +589,7 @@ class RobotGUI:
             messagebox.showerror("Param error", str(e))
 
     def on_start_sequence(self):
+        # Voorkom dubbele start
         if self.sequence_thread and self.sequence_thread.is_alive():
             messagebox.showinfo("Info", "Sequence is al bezig.")
             return
@@ -582,47 +597,37 @@ class RobotGUI:
         if not self._check_robot_enabled_or_warn():
             return
 
-            # Lees de ruwe QR-code, bijv. 'V006-001'
-        code = scan_qr_only()
-        if code is None:
-            messagebox.showerror("QR-fout", "Geen geldige QR-code gevonden.")
+        # Lees keuze uit dropdown
+        choice = self.seq_choice.get().strip()
+        if choice not in ("1", "2", "3"):
+            messagebox.showerror("Sequence-fout", f"Onbekende sequence-keuze: {choice}")
             return
 
-        # Probeer het deel na het streepje te pakken: '001', '002', '003', '004'
-        try:
-            suffix = code.split("-")[1]
-        except IndexError:
-            messagebox.showerror("QR-fout", f"Onbekend QR-formaat: {code}")
-            return
-
-        # Reset alle flags eerst
+        # Reset alle flags
         self.program.do_gordels = False
         self.program.do_armsteunen = False
         self.program.do_buckles = False
 
-        # Mapping zoals jij wilt:
-        # 001 -> seatbelt sequence
-        # 002 -> armrest
-        # 003 -> gordelspoelen
-        if suffix == "001":
+        # Koppel jouw 3 sequences aan de flags
+        # Pas deze mapping aan naar jouw logica in sequence.py
+        if choice == "1":
+            #"001" (gordels + buckles)
             self.program.do_buckles = True
-            self.program.do_gordels = True
-        elif suffix == "002":
+        elif choice == "2":
+            #"002" (alleen armsteunen)
             self.program.do_armsteunen = True
-        elif suffix == "003":
+        elif choice == "3":
+            #"003" (alleen gordels)
             self.program.do_gordels = True
-        else:
-            messagebox.showerror("QR-fout", f"Onbekende productcode: {suffix}")
-            return
 
         self.append_status(
-            f"QR-code: {code} (suffix={suffix}, "
+            f"Sequence-selectie: {choice}, "
             f"gordels={self.program.do_gordels}, "
             f"armsteunen={self.program.do_armsteunen}, "
-            f"buckles={self.program.do_buckles})"
+            f"buckles={self.program.do_buckles}"
         )
 
-        def run_seq():
+        def runseq():
             try:
                 self.append_status("Sequence start...")
                 self._set_seq_state("Sequence running")
@@ -635,13 +640,12 @@ class RobotGUI:
                 if self._is_connection_lost_error(e):
                     self.root.after(0, lambda: self._set_disconnected_state(str(e)))
             finally:
-                # na korte tijd de status weer leeg zodat de GUI niet 'blijft hangen'
-                def clear_state():
+                def clearstate():
                     self._set_seq_state(None)
 
-                self.root.after(1000, clear_state)
+                self.root.after(1000, clearstate)
 
-        self.sequence_thread = threading.Thread(target=run_seq, daemon=True)
+        self.sequence_thread = threading.Thread(target=runseq, daemon=True)
         self.sequence_thread.start()
 
     def on_stop(self):
