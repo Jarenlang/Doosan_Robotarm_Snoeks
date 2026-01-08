@@ -350,7 +350,7 @@ class RobotGUI:
 
         chk_errors = ttk.Checkbutton(
             filter_frame,
-            text="Only show errora",
+            text="Only show errors",
             variable=self.var_filter_errors,
             style="TCheckbutton",
         )
@@ -525,7 +525,7 @@ class RobotGUI:
                         force_value = None
                         tcp_pose = None
                         try:
-                            tcp_pose = self.gateway.get_tcp_pose(0)
+                            tcp_pose = self.gateway.get_tcp(0)
                             force_value = self.gateway.get_tool_force(0)  # ref=0 of 1, wat jij nodig hebt
                         except Exception as force:
                             # Niet spammen met errors; optioneel 1x loggen
