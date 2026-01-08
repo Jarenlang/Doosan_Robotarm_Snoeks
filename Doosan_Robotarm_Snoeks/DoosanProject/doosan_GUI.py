@@ -523,18 +523,8 @@ class RobotGUI:
                                     break
 
                         # Force uitlezen
-                        force_value = None
-                        try:
-                            force_value = self.gateway.get_tool_force(0)
-                        except Exception as e_force:
-                            pass
-
-                        # NIEUW: TCP-pose uitlezen
-                        tcp_pose = None
-                        print(tcp_pose)
-                        if self.gateway.sock is not None:
-                            tcp_pose = self.gateway.get_tcppose()
-                            print(tcp_pose)
+                        force_value = self.gateway.get_tool_force(0)
+                        tcp_pose = self.gateway.get_tcppose()
 
                         def updlabels(force_value=force_value, tcp_pose=tcp_pose):
                             for i, v in divalues.items():
@@ -560,7 +550,7 @@ class RobotGUI:
 
 
                 except Exception as e:
-                    # algemene poll-fout: ook maar één keer loggen
+                    # algemene poll-fout: ook maar Ã©Ã©n keer loggen
                     def log_exc():
                         self.append_status(f"Statuspoll fout: {e}")
                     self.root.after(0, log_exc)
@@ -772,4 +762,3 @@ if __name__ == "__main__":
         root.attributes("-zoomed", True)  # Linux
     gui = RobotGUI(root)
     root.mainloop()
-

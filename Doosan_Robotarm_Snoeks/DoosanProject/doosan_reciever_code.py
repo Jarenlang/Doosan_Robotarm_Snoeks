@@ -214,9 +214,6 @@ def handle_command(sock, line):
             ry = cur_posx[4]
             rz = cur_posx[5]
 
-            msg = "OK tcppose {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f}\n".format(
-                x, y, z, rx, ry, rz
-            )
             server_socket_write(sock, msg.encode())
         except Exception:
             server_socket_write(sock, b"ERR tcppose invalid\n")

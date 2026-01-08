@@ -70,7 +70,7 @@ class RobotProgram:
 
         # 1) Naar home
         log("Naar home")
-        self.gateway.amovel(*self.p_home, self.velx, self.accx)
+        self.gateway.amovel(*self.p_armrest_pick, self.velx, self.accx)
         self.gateway.wait_until_stopped()
         if self._stop_flag:
             log("Sequence gestopt")
@@ -78,11 +78,19 @@ class RobotProgram:
 
 
         # 3) Naar beneden en zuiger aan
-        sensor_amovel(self, base_pos=self.p_home, direction="z-", pre_distance=250.0, force_limit=9)
+        sensor_amovel(self, base_pos=self.p_armrest_pick, force_limit=9, direction="z-", pre_distance=150.0, return_direction="y+", return_distance=200.0)
 
         # 4) Naar tussenstop
         log("Naar tussenstop armrest")
-        self.gateway.amovel(*self.p_home, self.velx, self.accx)
+        self.gateway.amovel(*self.p_armrest_pick, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        # 4) Naar tussenstop
+        log("Naar tussenstop armrest")
+        self.gateway.amovel(*self.p_armrest_pick, self.velx, self.accx)
         self.gateway.wait_until_stopped()
         if self._stop_flag:
             log("Sequence gestopt")

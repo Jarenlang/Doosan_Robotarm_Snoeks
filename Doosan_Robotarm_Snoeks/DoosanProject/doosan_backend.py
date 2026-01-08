@@ -54,7 +54,24 @@ ROBOT_IP = _config.get("robot_ip")
 PORT = _config.get("port")
 
 
-def sensor_amovel(self, base_pos, direction="z-", pre_distance=250.0, force_limit=30.0, statuscallback=None):
+def sensor_amovel(
+    self,
+    base_pos,
+    direction="z-",
+    pre_distance=250.0,
+    return_direction="y+",
+    return_distance=100.0,
+    force_limit=30.0,
+    statuscallback=None,
+):
+    """
+    1) Beweeg vanaf base_pos in direction1 over pre_distance1.
+    2) Monitor force; bij overschrijding:
+       - stop direct
+       - neem actuele TCP-pose
+       - beweeg vanaf die pose in direction2 over pre_distance2.
+    """
+
     def log(msg: str):
         print(msg)
         if statuscallback:
@@ -62,42 +79,57 @@ def sensor_amovel(self, base_pos, direction="z-", pre_distance=250.0, force_limi
 
     self._stop_flag = False
 
-    # Richtingsvector
-    dx, dy, dz = 0.0, 0.0, 0.0
-    if direction == "x+":
-        dx = 1.0
-    elif direction == "x-":
-        dx = -1.0
-    elif direction == "y+":
-        dy = 1.0
-    elif direction == "y-":
-        dy = -1.0
-    elif direction == "z+":
-        dz = 1.0
-    elif direction == "z-":
-        dz = -1.0
-    else:
-        log(f"Ongeldige richting: {direction}")
+    # -------- helper om richtingsvector uit string te halen --------
+    def dir_to_vec(direction: str):
+        dx, dy, dz = 0.0, 0.0, 0.0
+        if direction == "x+":
+            dx = 1.0
+        elif direction == "x-":
+            dx = -1.0
+        elif direction == "y+":
+            dy = 1.0
+        elif direction == "y-":
+            dy = -1.0
+        elif direction == "z+":
+            dz = 1.0
+        elif direction == "z-":
+            dz = -1.0
+        else:
+            raise ValueError(f"Ongeldige richting: {direction}")
+        return dx, dy, dz
+
+    # -------- eerste beweging vanaf base_pos --------
+    try:
+        dx1, dy1, dz1 = dir_to_vec(direction)
+    except ValueError as e:
+        log(str(e))
         return
 
     bx, by, bz, brx, bry, brz = base_pos
 
-    # Doelpositie: 250 mm in één keer in gekozen richting
-    target = [
-        bx + dx * pre_distance,
-        by + dy * pre_distance,
-        bz + dz * pre_distance,
-        brx, bry, brz,
+    target1 = [
+        bx + dx1 * pre_distance,
+        by + dy1 * pre_distance,
+        bz + dz1 * pre_distance,
+        brx,
+        bry,
+        brz,
     ]
 
-    log(f"sensor_amovel: beweeg in één keer naar {target}")
-    self.gateway.amovel(*target, 20, 20)
+    log(f"sensor_amovel: eerste beweging naar {target1}")
+    self.gateway.change_operation_speed(20)
+    self.gateway.amovel(*target1, 20, 20)
+    self.gateway.wait_until_stopped()
+    self.gateway.change_operation_speed(self.operation_speed)
+
     if self._stop_flag:
-        log("Sequence gestopt voor force-check.")
+        log("Sequence gestopt vÃ³Ã³r force-check.")
         return
 
-    # Force monitoren; bij overschrijding direct stoppen en terug
+    # -------- force monitor --------
     log(f"sensor_amovel: force-monitor starten, limiet {force_limit} N")
+    trigger_reached = False
+
     while not self._stop_flag:
         try:
             force_value = self.gateway.get_tool_force(0)
@@ -110,28 +142,64 @@ def sensor_amovel(self, base_pos, direction="z-", pre_distance=250.0, force_limi
         if force_value is not None:
             log(f"Huidige force: {force_value:.2f} N")
             if force_value >= force_limit:
-                log("Force-limiet bereikt, stuur stop en terug naar vorige coordinaat.")
+                log("Force-limiet bereikt, directe stop.")
                 try:
-                    # directe stop
                     self.gateway.stop()
                 except Exception as e:
                     log(f"Fout bij stop-commando: {e}")
+                trigger_reached = True
                 break
 
-    # DO2 aan
-    try:
-        self.gateway.set_digital_output(2, 1)  # DO2 hoog [file:1][file:3]
-        log("DO2 = 1 gezet.")
-    except Exception as e:
-        log(f"Fout bij DO2 zetten: {e}")
+    # DO2 aan als trigger bereikt is
+    if trigger_reached:
+        try:
+            self.gateway.set_digital_output(2, 1)  # DO2 hoog
+            log("DO2 = 1 gezet.")
+        except Exception as e:
+            log(f"Fout bij DO2 zetten: {e}")
 
-    # Terug naar oorspronkelijke (base) positie in één beweging
-    self.gateway.change_operation_speed(self.operation_speed)
-    up_target = [bx, by, bz, brx, bry, brz]
-    log(f"sensor_amovel: terug naar vorige coordinaat {up_target}")
-    self.gateway.amovel(*up_target, self.velx, self.accx)
-    self.gateway.wait_until_stopped()
-    log("sensor_amovel: klaar.")
+    # -------- tweede beweging vanaf actuele TCP-pose --------
+    if trigger_reached:
+        try:
+            cur_x, cur_y, cur_z, cur_rx, cur_ry, cur_rz = self.gateway.get_tcppose()
+            log(
+                f"sensor_amovel: actuele TCP na stop: "
+                f"[{cur_x:.1f}, {cur_y:.1f}, {cur_z:.1f}, "
+                f"{cur_rx:.1f}, {cur_ry:.1f}, {cur_rz:.1f}]"
+            )
+        except Exception as e:
+            log(f"Fout bij uitlezen TCP-pose: {e}")
+            # als we de pose niet kunnen lezen, stoppen we hier
+            return
+
+        try:
+            dx2, dy2, dz2 = dir_to_vec(return_direction)
+        except ValueError as e:
+            log(str(e))
+            return
+
+        target2 = [
+            cur_x + dx2 * return_distance,
+            cur_y + dy2 * return_distance,
+            cur_z + dz2 * return_distance,
+            cur_rx,
+            cur_ry,
+            cur_rz,
+        ]
+
+        self.gateway.change_operation_speed(self.operation_speed)
+        log(f"sensor_amovel: tweede beweging vanaf TCP naar {target2}")
+        self.gateway.amovel(*target2, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        log("sensor_amovel: tweede beweging klaar.")
+    else:
+        # als force-limiet nooit bereikt is: optioneel terug naar base_pos zoals vroeger
+        self.gateway.change_operation_speed(self.operation_speed)
+        up_target = [bx, by, bz, brx, bry, brz]
+        log(f"sensor_amovel: force-limiet niet bereikt, terug naar {up_target}")
+        self.gateway.amovel(*up_target, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        log("sensor_amovel: klaar (terug naar base_pos).")
 
 def apply_parameters(self):
     """Stuur huidige parameters naar de robot."""
@@ -283,7 +351,7 @@ class DoosanGatewayClient:
 
     def set_lamp(self, ready: bool, moving: bool):
         """
-        Zorgt dat precies één stand actief is:
+        Zorgt dat precies Ã©Ã©n stand actief is:
         - ready=True  => DO1=1, DO2=0
         - moving=True => DO1=0, DO2=1
         - allebei False => DO1=0, DO2=0
@@ -382,7 +450,7 @@ class DoosanGatewayClient:
         raise RuntimeError(f"toolforce error response {resp!r}")
 
     def get_tcppose(self):
-        resp = self.send_raw("tcppose", expect_response=True)
+        resp = self.send_raw("tcp_pose", expect_response=True)
         print(resp)
         if not resp:
             raise RuntimeError("Empty response from tcppose")
