@@ -297,6 +297,10 @@ class RobotGUI:
         self.forcelabel = ttk.Label(force_frame, textvariable=self.forcevar, style="Snoeks.TLabel")
         self.forcelabel.pack(anchor="w")
 
+        self.tcpvar = tk.StringVar(value="TCP: ?")
+        self.tcplabel = ttk.Label(force_frame, textvariable=self.tcpvar, style="Snoeks.TLabel")
+        self.tcplabel.pack(anchor="w")
+
         # Logo links onderin
         # container helemaal onderaan links
         logo_frame = ttk.Frame(left_frame, style="Snoeks.TFrame")
@@ -346,7 +350,7 @@ class RobotGUI:
 
         chk_errors = ttk.Checkbutton(
             filter_frame,
-            text="Only show errora",
+            text="Only show errors",
             variable=self.var_filter_errors,
             style="TCheckbutton",
         )
@@ -519,13 +523,15 @@ class RobotGUI:
 
                         # Force uitlezen
                         force_value = None
+                        tcp_pose = None
                         try:
+                            tcp_pose = self.gateway.get_tcp(0)
                             force_value = self.gateway.get_tool_force(0)  # ref=0 of 1, wat jij nodig hebt
-                        except Exception as eforce:
+                        except Exception as force:
                             # Niet spammen met errors; optioneel 1x loggen
                             pass
 
-                        def updlabels(force_value=force_value):
+                        def updlabels(force_value=force_value, tcp_pose=tcp_pose):
                             for i, v in divalues.items():
                                 self.di_labels[i - 1].config(text=f"DI{i}: {v}")
                             if force_value is not None:
@@ -533,8 +539,14 @@ class RobotGUI:
                             else:
                                 self.forcevar.set("Force: ? N")
 
+                            if tcp_pose is not None:
+                                x, y, z, rx, ry, rz = tcp_pose
+                                self.tcpvar.set(
+                                    f"TCP x={x:.1f}, y={y:.1f}, z={z:.1f}, "
+                                    f"rx={rx:.1f}, ry={ry:.1f}, rz={rz:.1f}")
+                            else:
+                                self.tcpvar.set("TCP: ?")
                         self.root.after(0, updlabels)
-
 
                 except Exception as e:
                     # algemene poll-fout: ook maar één keer loggen

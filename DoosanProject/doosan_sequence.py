@@ -1,4 +1,4 @@
-from doosan_backend import (load_config, save_config, load_coordinates, DoosanGatewayClient, is_robot_enabled, sensor_amovel)
+from doosan_backend import *
 import time
 
 class RobotProgram:
@@ -163,7 +163,7 @@ class RobotProgram:
             return
 
         # 3) Naar beneden en zuiger aan
-        sensor_amovel(
+        self.gateway.sensor_amovel(
             self,
             base_pos=self.p_armrest_pick,
             direction="z-",
