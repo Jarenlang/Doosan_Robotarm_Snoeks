@@ -4,47 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a1f64d59-c2d3-4427-9648-0ff95c7ef0f1" name="Changes" comment="test v3">
-      <change beforePath="$PROJECT_DIR$/.idea/DoosanProject.iml" beforeDir="false" />
+    <list default="true" id="a1f64d59-c2d3-4427-9648-0ff95c7ef0f1" name="Changes" comment="rechanging v 100032045348752108735">
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/.idea/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/.idea/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/.idea/Doosan_Robotarm_Snoeks.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/.idea/modules.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/CODE_OF_CONDUCT.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/CONTRIBUTING.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/DoosanProject/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/DoosanProject/.idea/DoosanProject.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/DoosanProject/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/DoosanProject/.idea/misc.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/DoosanProject/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/DoosanProject/.idea/vcs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/DoosanProject/Snoeks.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/DoosanProject/config.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/DoosanProject/coordinates.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/DoosanProject/doosan_GUI.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/DoosanProject/doosan_backend.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/DoosanProject/doosan_reciever_code.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/DoosanProject/doosan_sequence.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/DoosanProject/download.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/DoosanProject/producten.xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/DoosanProject/qr_scanner.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/DoosanProject/scanned.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/SECURITY.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Testproject/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Testproject/.idea/Testproject.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Testproject/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Testproject/.idea/misc.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Testproject/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Testproject/.idea/vcs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Testproject/.idea/workspace.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Testproject/resultaten.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Testproject/testcode.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/code/backend.py" beforeDir="false" afterPath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/code/backend.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -75,19 +38,25 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;Python.GUI.executor&quot;: &quot;Run&quot;,
-    &quot;Python.doosan_GUI.executor&quot;: &quot;Run&quot;,
-    &quot;Python.doosan_backend.executor&quot;: &quot;Run&quot;,
-    &quot;Python.runGUI.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Python.GUI.executor": "Run",
+    "Python.doosan_GUI.executor": "Run",
+    "Python.doosan_backend.executor": "Run",
+    "Python.runGUI.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "master",
+    "ignore.virus.scanning.warn.message": "true",
+    "last_opened_file_path": "C:/Users/eeuwe/PycharmProjects/Doosan_Robotarm_Snoeks/Doosan_Robotarm_Snoeks/code"
   }
-}</component>
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\eeuwe\PycharmProjects\Doosan_Robotarm_Snoeks\Doosan_Robotarm_Snoeks\code" />
+    </key>
+  </component>
   <component name="RunManager">
     <configuration name="runGUI" type="PythonConfigurationType" factoryName="Python">
       <module name="DoosanProject" />
@@ -102,7 +71,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/DoosanProject/doosan_GUI.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/code/GUI.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -167,13 +136,31 @@
       <option name="project" value="LOCAL" />
       <updated>1767947263118</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="rechanging v 100032045348752108734">
+      <option name="closed" value="true" />
+      <created>1767948351757</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1767948351757</updated>
+    </task>
+    <task id="LOCAL-00007" summary="rechanging v 100032045348752108735">
+      <option name="closed" value="true" />
+      <created>1767948454117</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1767948454117</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="totaal nieuw project" />
     <MESSAGE value="wijzigingen in de code voor de movedown sensor(werkt nog niet helemaal, kracht wordt niet gebruikt." />
     <MESSAGE value="test v3" />
-    <option name="LAST_COMMIT_MESSAGE" value="test v3" />
+    <MESSAGE value="rechanging v 100032045348752108734" />
+    <MESSAGE value="rechanging v 100032045348752108735" />
+    <option name="LAST_COMMIT_MESSAGE" value="rechanging v 100032045348752108735" />
   </component>
 </project>

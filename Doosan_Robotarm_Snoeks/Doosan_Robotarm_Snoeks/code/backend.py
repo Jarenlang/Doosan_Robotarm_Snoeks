@@ -7,7 +7,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "..", "data")
 
 CONFIG_FILE = os.path.join(DATA_DIR, "config.json")
-COORD_FILE = os.path.join(DATA_DIR, "coordinaten.json")
+COORD_FILE = os.path.join(DATA_DIR, "coordinates.json")
 
 def load_config():
     if not os.path.exists(CONFIG_FILE):
@@ -67,13 +67,6 @@ def sensor_amovel(
     force_limit=30.0,
     statuscallback=None,
 ):
-    """
-    1) Beweeg vanaf base_pos in direction1 over pre_distance1.
-    2) Monitor force; bij overschrijding:
-       - stop direct
-       - neem actuele TCP-pose
-       - beweeg vanaf die pose in direction2 over pre_distance2.
-    """
 
     def log(msg: str):
         print(msg)
@@ -122,8 +115,6 @@ def sensor_amovel(
     log(f"sensor_amovel: eerste beweging naar {target1}")
     self.gateway.change_operation_speed(20)
     self.gateway.amovel(*target1, 20, 20)
-    self.gateway.wait_until_stopped()
-    self.gateway.change_operation_speed(self.operation_speed)
 
     if self._stop_flag:
         log("Sequence gestopt voor force-check.")
@@ -158,6 +149,7 @@ def sensor_amovel(
     if trigger_reached:
         try:
             self.gateway.set_digital_output(2, 1)  # DO2 hoog
+            self.gateway.change_operation_speed(self.operation_speed)
             log("DO2 = 1 gezet.")
         except Exception as e:
             log(f"Fout bij DO2 zetten: {e}")
