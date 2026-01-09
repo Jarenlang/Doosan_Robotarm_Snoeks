@@ -4,10 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a1f64d59-c2d3-4427-9648-0ff95c7ef0f1" name="Changes" comment="rechanging v 100032045348752108735">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="a1f64d59-c2d3-4427-9648-0ff95c7ef0f1" name="Changes" comment="huidig functionele code!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/code/backend.py" beforeDir="false" afterPath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/code/backend.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/code/sequence.py" beforeDir="false" afterPath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/code/sequence.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/data/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/data/config.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/data/coordinates.json" beforeDir="false" afterPath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/data/coordinates.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -152,7 +154,15 @@
       <option name="project" value="LOCAL" />
       <updated>1767948454117</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="huidig functionele code!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!">
+      <option name="closed" value="true" />
+      <created>1767949989842</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1767949989842</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -161,6 +171,7 @@
     <MESSAGE value="test v3" />
     <MESSAGE value="rechanging v 100032045348752108734" />
     <MESSAGE value="rechanging v 100032045348752108735" />
-    <option name="LAST_COMMIT_MESSAGE" value="rechanging v 100032045348752108735" />
+    <MESSAGE value="huidig functionele code!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" />
+    <option name="LAST_COMMIT_MESSAGE" value="huidig functionele code!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" />
   </component>
 </project>

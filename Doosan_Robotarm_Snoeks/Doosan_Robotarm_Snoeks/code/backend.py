@@ -113,8 +113,7 @@ def sensor_amovel(
     ]
 
     log(f"sensor_amovel: eerste beweging naar {target1}")
-    self.gateway.change_operation_speed(20)
-    self.gateway.amovel(*target1, 20, 20)
+    self.gateway.amovel(*target1, 10, 50)
 
     if self._stop_flag:
         log("Sequence gestopt voor force-check.")
@@ -149,10 +148,32 @@ def sensor_amovel(
     if trigger_reached:
         try:
             self.gateway.set_digital_output(2, 1)  # DO2 hoog
-            self.gateway.change_operation_speed(self.operation_speed)
             log("DO2 = 1 gezet.")
         except Exception as e:
             log(f"Fout bij DO2 zetten: {e}")
+
+        try:
+            curx, cury, curz, currx, curry, currz = self.gateway.get_tcppose()
+            log(f"sensor_amovel actuele TCP na stop voor kleine lift: ")
+            log(f"{curx:.1f}, {cury:.1f}, {curz:.1f}, {currx:.1f}, {curry:.1f}, {currz:.1f}")
+
+            lift_mm = 5.0  # hier kun je 4.0 of 5.0 van maken
+            lift_target = (
+                curx - dx1 * lift_mm,
+                cury - dy1 * lift_mm,
+                curz - dz1 * lift_mm,
+                currx,
+                curry,
+                currz,
+            )
+
+            log(f"sensor_amovel kleine lift van {lift_mm} mm naar {lift_target}")
+            self.gateway.change_operation_speed(self.operation_speed)
+            self.gateway.amovel(*lift_target, self.velx, self.accx)
+            self.gateway.wait_until_stopped()
+            log("sensor_amovel kleine lift klaar.")
+        except Exception as e:
+            log(f"Fout bij kleine lift-beweging: {e}")
 
     # -------- tweede beweging vanaf actuele TCP-pose --------
     if trigger_reached:
