@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="a1f64d59-c2d3-4427-9648-0ff95c7ef0f1" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/DoosanProject.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/Snoeks.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/download.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/GUI.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/backend.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/qr_scanner.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/reciever_code.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/sequence.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/config.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/coordinates.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/producten.xlsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/scanned.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/officiele documentatie/CODE_OF_CONDUCT.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/officiele documentatie/CONTRIBUTING.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/officiele documentatie/LICENSE" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/officiele documentatie/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/officiele documentatie/SECURITY.md" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;Jarenlang&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/Jarenlang/Doosan_Robotarm_Snoeks.git&quot;,
+    &quot;accountId&quot;: &quot;d0c28368-c850-4a99-94f9-9ac678bfc703&quot;
+  }
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 5
+}</component>
+  <component name="ProjectId" id="37ya1JMhE6o00xQ4zxQ2M0OLqZ3" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python.doosan_GUI.executor&quot;: &quot;Run&quot;,
+    &quot;Python.doosan_backend.executor&quot;: &quot;Run&quot;,
+    &quot;Python.runGUI.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RunManager">
+    <configuration name="runGUI" type="PythonConfigurationType" factoryName="Python">
+      <module name="DoosanProject" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/DoosanProject/doosan_GUI.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-python-sdk-a101402ee41c-968fe969f28a-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-252.28238.29" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="a1f64d59-c2d3-4427-9648-0ff95c7ef0f1" name="Changes" comment="" />
+      <created>1767877551042</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1767877551042</updated>
+    </task>
+    <task id="LOCAL-00001" summary="totaal nieuw project">
+      <option name="closed" value="true" />
+      <created>1767880718861</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1767880718861</updated>
+    </task>
+    <task id="LOCAL-00002" summary="totaal nieuw project">
+      <option name="closed" value="true" />
+      <created>1767880745022</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1767880745022</updated>
+    </task>
+    <task id="LOCAL-00003" summary="wijzigingen in de code voor de movedown sensor(werkt nog niet helemaal, kracht wordt niet gebruikt.">
+      <option name="closed" value="true" />
+      <created>1767884718067</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1767884718067</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
+    <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="totaal nieuw project" />
+    <MESSAGE value="wijzigingen in de code voor de movedown sensor(werkt nog niet helemaal, kracht wordt niet gebruikt." />
+    <option name="LAST_COMMIT_MESSAGE" value="wijzigingen in de code voor de movedown sensor(werkt nog niet helemaal, kracht wordt niet gebruikt." />
+  </component>
+</project>
