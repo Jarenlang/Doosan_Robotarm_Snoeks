@@ -122,7 +122,57 @@ class RobotProgram:
             if statuscallback:
                 statuscallback(msg)
 
+        # Seatbelt buffer, vooraf gaand aan het proces wordt gekeken of de buffer vol is.
+        buffer_leeg_seatbelt_1 = self.gateway.get_digital_input(9)  # Code kijkt hier naar pin 17
+        buffer_leeg_seatbelt_2 = self.gateway.get_digital_input(10)  # Code kijkt hier naar pin 18
+        buffer_leeg_seatbelt_3 = self.gateway.get_digital_input(11)  # Code kijkt hier naar pin 19
+        log("test")
 
+        if buffer_leeg_seatbelt_1 and buffer_leeg_seatbelt_2 and buffer_leeg_seatbelt_3:  # als buffer 1, 2, 3 leeg zijn...
+            log("Buffer seatbelt full")  # Stuur de tekst "buffer seatbelt full"
+
+        if not buffer_leeg_seatbelt_1 and not buffer_leeg_seatbelt_2 and not buffer_leeg_seatbelt_3:  # Als de buffer NIET leeg is...
+            self.gateway.set_digital_output(16, 1)  # Stuur een signiaal (1) naar pin 16 (Warning Light)
+            log("All seatbelt buffers are empty")  # Stuur de tekst: "All seatbelt buffers are empty"
+            self.wait_for_operator_confirm(statuscallback)  # Wacht tot de groene knop wordt ingedrukt.
+
+        self.gateway.set_digital_output(16,0)  # Naar pin 16 (warning light) wordt geen signiaal meer gestuurd (0)
+
+        # 1) Naar home
+        log("Naar home")
+        self.gateway.amovej(*self.p_j_home, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        log("Naar armrest pick")
+        self.gateway.amovel(*self.p_armrest_pick, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        # 3) Naar beneden en zuiger aan
+        sensor_amovel(self, base_pos=self.p_armrest_pick, force_limit=7, direction="z-", pre_distance=150.0, return_direction="y+", return_distance=200.0)
+
+        # 4) Naar tussenstop
+        log("Naar tussenstop armrest")
+        self.gateway.amovej(*self.p_j_home, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        # 4) Naar tussenstop
+        log("Naar tussenstop armrest")
+        self.gateway.amovej(*self.p_j_home, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        self.gateway.set_digital_output(2, 0)
 
     def sequence_pick_and_place(self, statuscallback=None):
         def log(msg: str):
