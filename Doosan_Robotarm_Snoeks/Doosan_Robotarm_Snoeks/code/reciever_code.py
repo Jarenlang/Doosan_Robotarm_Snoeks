@@ -41,6 +41,21 @@ def handle_command(sock, line):
         server_socket_write(sock, b"OK amovel\n")
         return
 
+    if cmd == "amovej":
+        # verwacht: amovej j1 j2 j3 j4 j5 j6 vel acc
+        if len(tokens) != 9:
+            server_socket_write(sock, b"ERR amovej needs 8 args")
+            return
+        vals = parse_floats(tokens, 1, 8)
+        j1, j2, j3, j4, j5, j6, vel, acc = vals
+        target = [j1, j2, j3, j4, j5, j6]  # posj
+        set_velj(vel)
+        set_accj(acc)
+        amovej(target)
+        server_socket_write(sock, b"OK amovej")
+        return
+
+
     if cmd == "amovejx":
         if len(tokens) != 9:
             server_socket_write(sock, b"ERR amovejx needs 8 args\n")

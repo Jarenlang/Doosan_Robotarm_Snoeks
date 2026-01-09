@@ -297,6 +297,10 @@ class DoosanGatewayClient:
         cmd = f"amovel {x} {y} {z} {rx} {ry} {rz} {vel} {acc}\n"
         return self.send_raw(cmd)
 
+    def amovej(self, j1, j2, j3, j4, j5, j6, vel, acc):
+        cmd = f"amovej {j1} {j2} {j3} {j4} {j5} {j6} {vel} {acc}"
+        return self.send_raw(cmd)
+
     def amovejx(self, x, y, z, rx, ry, rz, vel, acc):
         cmd = f"amovejx {x} {y} {z} {rx} {ry} {rz} {vel} {acc}\n"
         return self.send_raw(cmd)
