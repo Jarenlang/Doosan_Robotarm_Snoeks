@@ -126,7 +126,6 @@ def sensor_amovel(
     while not self._stop_flag:
         try:
             force_value = self.gateway.get_tool_force(0)
-            log(force_value)
         except Exception as e:
             log(f"Fout bij uitlezen force: {e}")
             self._stop_flag = True

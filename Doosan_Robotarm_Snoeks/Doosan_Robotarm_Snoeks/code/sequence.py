@@ -84,7 +84,7 @@ class RobotProgram:
             return
 
         # 3) Naar beneden en zuiger aan
-        sensor_amovel(self, base_pos=self.p_armrest_pick, force_limit=9, direction="z-", pre_distance=150.0, return_direction="y+", return_distance=200.0)
+        sensor_amovel(self, base_pos=self.p_armrest_pick, force_limit=7, direction="z-", pre_distance=150.0, return_direction="y+", return_distance=200.0)
 
         # 4) Naar tussenstop
         log("Naar tussenstop armrest")
