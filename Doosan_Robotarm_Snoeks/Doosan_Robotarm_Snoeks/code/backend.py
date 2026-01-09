@@ -468,7 +468,6 @@ class DoosanGatewayClient:
 
     def get_tcppose(self):
         resp = self.send_raw("tcp_pose", expect_response=True)
-        print(resp)
         if not resp:
             raise RuntimeError("Empty response from tcppose")
 

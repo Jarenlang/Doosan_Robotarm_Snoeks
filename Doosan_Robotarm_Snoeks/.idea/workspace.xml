@@ -4,13 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a1f64d59-c2d3-4427-9648-0ff95c7ef0f1" name="Changes" comment="huidig functionele code!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/code/backend.py" beforeDir="false" afterPath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/code/backend.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/code/sequence.py" beforeDir="false" afterPath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/code/sequence.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/data/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/data/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/data/coordinates.json" beforeDir="false" afterPath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/data/coordinates.json" afterDir="false" />
-    </list>
+    <list default="true" id="a1f64d59-c2d3-4427-9648-0ff95c7ef0f1" name="Changes" comment="huidig functionele code V2!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -162,7 +156,15 @@
       <option name="project" value="LOCAL" />
       <updated>1767949989842</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="huidig functionele code V2!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!">
+      <option name="closed" value="true" />
+      <created>1767953639077</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1767953639077</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -172,6 +174,7 @@
     <MESSAGE value="rechanging v 100032045348752108734" />
     <MESSAGE value="rechanging v 100032045348752108735" />
     <MESSAGE value="huidig functionele code!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" />
-    <option name="LAST_COMMIT_MESSAGE" value="huidig functionele code!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" />
+    <MESSAGE value="huidig functionele code V2!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" />
+    <option name="LAST_COMMIT_MESSAGE" value="huidig functionele code V2!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" />
   </component>
 </project>
