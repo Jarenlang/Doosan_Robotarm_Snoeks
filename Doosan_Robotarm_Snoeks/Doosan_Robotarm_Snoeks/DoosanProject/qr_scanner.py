@@ -5,11 +5,8 @@ import pandas as pd
 from datetime import datetime
 from pyzbar.pyzbar import decode
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.join(BASE_DIR, "..", "data")
-
-DB = pd.read_excel(os.path.join(DATA_DIR, "producten.xlsx"))
-SCANNED_FILE = os.path.join(DATA_DIR, "scanned.json")
+DB = pd.read_excel("producten.xlsx")
+SCANNED_FILE = "scanned.json"
 
 def combine_features(has_gordels: bool, has_armsteunen: bool) -> int:
     if has_gordels and has_armsteunen:

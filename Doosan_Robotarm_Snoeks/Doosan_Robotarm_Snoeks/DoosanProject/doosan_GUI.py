@@ -2,19 +2,15 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import webbrowser
 
-from qr_scanner import scan_qr_only, scan_barcode_only
-from backend import *
-from sequence import RobotProgram
+from qr_scanner import scan_qr_only, scan_barcode_only, scan_qr_with_camera
+from doosan_backend import *
+from doosan_sequence import RobotProgram
 
 cfg = load_config()
 Snoeks_Red = cfg.get("Snoeks_Red")
 Snoeks_Dark = cfg.get("Snoeks_Dark")
 Snoeks_Dark2 = cfg.get("Snoeks_Dark2")
 Snoeks_Text = cfg.get("Snoeks_Text")
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-ASSETS_DIR = os.path.join(BASE_DIR, "..", "assets")
-LOGO_PATH = os.path.join(ASSETS_DIR, "Snoeks.png")
 
 def setup_snoeks_style(root):
     style = ttk.Style(root)
@@ -90,9 +86,9 @@ class RobotGUI:
         setup_snoeks_style(root)
 
         try:
-            iconimg = tk.PhotoImage(file=LOGO_PATH)
-            self.iconimg = iconimg
-            self.root.iconphoto(False, iconimg)
+            icon_img = tk.PhotoImage(file="Snoeks.png")
+            self._icon_img = icon_img
+            self.root.iconphoto(False, icon_img)
         except Exception as e:
             print(f"Kon window-icoon niet laden: {e}")
 
@@ -158,7 +154,7 @@ class RobotGUI:
         ctrl_frame.pack(fill="x", padx=10, pady=5)
 
         # knoppen netjes in een grid, alle kolommen gelijk laten schalen
-        for col in range(6):
+        for col in range(4):
             ctrl_frame.columnconfigure(col, weight=1)
 
         btn_width = 14  # uniforme knopbreedte
@@ -219,20 +215,6 @@ class RobotGUI:
             width=btn_width,
         )
         self.btn_test_bar.grid(row=1, column=2, padx=5, pady=5, sticky="ew")
-
-        ttk.Label(ctrl_frame, text="Sequence", style="Snoeks.TLabel").grid(
-            row=0, column=3, sticky="w", padx=5
-        )
-        self.seq_choice = tk.StringVar(value="1")
-        self.seq_combo = ttk.Combobox(
-            ctrl_frame,
-            textvariable=self.seq_choice,
-            values=["1", "2", "3"],
-            state="readonly",
-            width=5
-        )
-        self.seq_combo.grid(row=0, column=4, sticky="w", padx=5)
-
 
         # optioneel: ruimte reserveren voor andere knoppen of gewoon leeg laten
         ctrl_frame.grid_columnconfigure(2, weight=1)
@@ -326,16 +308,22 @@ class RobotGUI:
         logo_frame.pack(side="bottom", fill="x", padx=10, pady=10)
 
         try:
-            original_logo = tk.PhotoImage(file=LOGO_PATH)
-            self.originallogo = original_logo
-            targetwidth = 150
+            # basisafbeelding laden (zelfde bestand als window-icoon)
+            original_logo = tk.PhotoImage(file="Snoeks.png")
+            self._original_logo = original_logo  # referentie bewaren
+
+            # doelbreedte (in pixels) voor in de hoek
+            target_width = 150
             w = original_logo.width()
             h = original_logo.height()
-            scale = int(w / targetwidth) if w > targetwidth else 1
-            logosmall = original_logo.subsample(scale)
-            self.logosmall = logosmall
-            self.logolabel = ttk.Label(logo_frame, image=logosmall, style="Snoeks.TLabel")
-            self.logolabel.pack(anchor="w")
+            scale = int(w / target_width)  # integer factor voor subsample
+
+            # kleiner maken met subsample zodat het netjes schaalt
+            logo_small = original_logo.subsample(scale)
+            self._logo_small = logo_small  # ook referentie bewaren
+
+            self.logo_label = ttk.Label(logo_frame, image=logo_small, style="Snoeks.TLabel")
+            self.logo_label.pack(anchor="w")
         except Exception as e:
             # Als het logo niet geladen kan worden, gewoon niets tonen
             print(f"Kon logo niet laden: {e}")
@@ -589,7 +577,6 @@ class RobotGUI:
             messagebox.showerror("Param error", str(e))
 
     def on_start_sequence(self):
-        # Voorkom dubbele start
         if self.sequence_thread and self.sequence_thread.is_alive():
             messagebox.showinfo("Info", "Sequence is al bezig.")
             return
@@ -597,37 +584,47 @@ class RobotGUI:
         if not self._check_robot_enabled_or_warn():
             return
 
-        # Lees keuze uit dropdown
-        choice = self.seq_choice.get().strip()
-        if choice not in ("1", "2", "3"):
-            messagebox.showerror("Sequence-fout", f"Onbekende sequence-keuze: {choice}")
+            # Lees de ruwe QR-code, bijv. 'V006-001'
+        code = scan_qr_only()
+        if code is None:
+            messagebox.showerror("QR-fout", "Geen geldige QR-code gevonden.")
             return
 
-        # Reset alle flags
+        # Probeer het deel na het streepje te pakken: '001', '002', '003', '004'
+        try:
+            suffix = code.split("-")[1]
+        except IndexError:
+            messagebox.showerror("QR-fout", f"Onbekend QR-formaat: {code}")
+            return
+
+        # Reset alle flags eerst
         self.program.do_gordels = False
         self.program.do_armsteunen = False
         self.program.do_buckles = False
 
-        # Koppel jouw 3 sequences aan de flags
-        # Pas deze mapping aan naar jouw logica in sequence.py
-        if choice == "1":
-            #"001" (gordels + buckles)
+        # Mapping zoals jij wilt:
+        # 001 -> seatbelt sequence
+        # 002 -> armrest
+        # 003 -> gordelspoelen
+        if suffix == "001":
             self.program.do_buckles = True
-        elif choice == "2":
-            #"002" (alleen armsteunen)
-            self.program.do_armsteunen = True
-        elif choice == "3":
-            #"003" (alleen gordels)
             self.program.do_gordels = True
+        elif suffix == "002":
+            self.program.do_armsteunen = True
+        elif suffix == "003":
+            self.program.do_gordels = True
+        else:
+            messagebox.showerror("QR-fout", f"Onbekende productcode: {suffix}")
+            return
 
         self.append_status(
-            f"Sequence-selectie: {choice}, "
+            f"QR-code: {code} (suffix={suffix}, "
             f"gordels={self.program.do_gordels}, "
             f"armsteunen={self.program.do_armsteunen}, "
-            f"buckles={self.program.do_buckles}"
+            f"buckles={self.program.do_buckles})"
         )
 
-        def runseq():
+        def run_seq():
             try:
                 self.append_status("Sequence start...")
                 self._set_seq_state("Sequence running")
@@ -640,12 +637,13 @@ class RobotGUI:
                 if self._is_connection_lost_error(e):
                     self.root.after(0, lambda: self._set_disconnected_state(str(e)))
             finally:
-                def clearstate():
+                # na korte tijd de status weer leeg zodat de GUI niet 'blijft hangen'
+                def clear_state():
                     self._set_seq_state(None)
 
-                self.root.after(1000, clearstate)
+                self.root.after(1000, clear_state)
 
-        self.sequence_thread = threading.Thread(target=runseq, daemon=True)
+        self.sequence_thread = threading.Thread(target=run_seq, daemon=True)
         self.sequence_thread.start()
 
     def on_stop(self):

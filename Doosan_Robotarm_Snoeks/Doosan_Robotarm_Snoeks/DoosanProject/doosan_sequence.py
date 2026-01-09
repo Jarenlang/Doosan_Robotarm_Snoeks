@@ -1,4 +1,4 @@
-from backend import (load_config, save_config, load_coordinates, DoosanGatewayClient, is_robot_enabled, sensor_amovel)
+from doosan_backend import (load_config, save_config, load_coordinates, DoosanGatewayClient, is_robot_enabled, sensor_amovel)
 import time
 
 class RobotProgram:

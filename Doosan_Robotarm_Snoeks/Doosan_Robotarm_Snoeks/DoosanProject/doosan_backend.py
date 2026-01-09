@@ -3,11 +3,8 @@ import threading
 import json
 import os
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.join(BASE_DIR, "..", "data")
-
-CONFIG_FILE = os.path.join(DATA_DIR, "config.json")
-COORD_FILE = os.path.join(DATA_DIR, "coordinaten.json")
+CONFIG_FILE = "config.json"
+COORD_FILE = "coordinates.json"
 
 def load_config():
     if not os.path.exists(CONFIG_FILE):
@@ -126,7 +123,7 @@ def sensor_amovel(
     self.gateway.change_operation_speed(self.operation_speed)
 
     if self._stop_flag:
-        log("Sequence gestopt voor force-check.")
+        log("Sequence gestopt vÃ³Ã³r force-check.")
         return
 
     # -------- force monitor --------
@@ -136,7 +133,6 @@ def sensor_amovel(
     while not self._stop_flag:
         try:
             force_value = self.gateway.get_tool_force(0)
-            log(force_value)
         except Exception as e:
             log(f"Fout bij uitlezen force: {e}")
             self._stop_flag = True
