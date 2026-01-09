@@ -669,7 +669,7 @@ class RobotGUI:
             self.program.apply_parameters()
             #self.gateway.set_lamp(False, True)
             self.append_status("Home-beweging gestart...")
-            self.gateway.amovel(*self.program.p_home, self.program.velx, self.program.accx)
+            self.gateway.amovej(*self.program.p_j_home, self.program.velx, self.program.accx)
             self.gateway.wait_until_stopped()
             self.append_status("Home-beweging klaar.")
             #self.gateway.set_lamp(True, False)

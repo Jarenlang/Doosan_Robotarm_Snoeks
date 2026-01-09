@@ -81,7 +81,7 @@ class RobotProgram:
 
         # 1) Naar home
         log("Naar home")
-        self.gateway.amovel(*self.p_home, self.velx, self.accx)
+        self.gateway.amovej(*self.p_j_home, self.velx, self.accx)
         self.gateway.wait_until_stopped()
         if self._stop_flag:
             log("Sequence gestopt")
@@ -99,7 +99,7 @@ class RobotProgram:
 
         # 4) Naar tussenstop
         log("Naar tussenstop armrest")
-        self.gateway.amovel(*self.p_home, self.velx, self.accx)
+        self.gateway.amovej(*self.p_j_home, self.velx, self.accx)
         self.gateway.wait_until_stopped()
         if self._stop_flag:
             log("Sequence gestopt")
@@ -107,7 +107,7 @@ class RobotProgram:
 
         # 4) Naar tussenstop
         log("Naar tussenstop armrest")
-        self.gateway.amovel(*self.p_home, self.velx, self.accx)
+        self.gateway.amovej(*self.p_j_home, self.velx, self.accx)
         self.gateway.wait_until_stopped()
         if self._stop_flag:
             log("Sequence gestopt")
