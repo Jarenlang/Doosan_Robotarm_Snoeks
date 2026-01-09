@@ -61,12 +61,23 @@ class RobotProgram:
             if statuscallback:
                 statuscallback(msg)
 
-
     def sequence_armrest(self, statuscallback=None):
         def log(msg: str):
             print(msg)
             if statuscallback:
                 statuscallback(msg)
+
+        buffer_vol = self.gateway.get_digital_input(16)
+
+        if not buffer_vol:
+            self.gateway.set_digital_output(16, 1)
+            log("Armrest cover buffer is empty")  # De tekst "Armrest cover buffer is empty"
+            self.wait_for_operator_confirm(statuscallback)
+
+        if buffer_vol:  # Wanneer buffer vol is en de knop niet ingedrukt
+            log("Buffer filled")  # De tekst "Buffer filled, waiting for operator"
+
+        self.gateway.set_digital_output(16, 0)
 
         # 1) Naar home
         log("Naar home")
