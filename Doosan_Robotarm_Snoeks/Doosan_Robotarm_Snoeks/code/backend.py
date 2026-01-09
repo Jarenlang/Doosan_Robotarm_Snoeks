@@ -218,7 +218,6 @@ def sensor_amovel(
         log("sensor_amovel: klaar (terug naar base_pos).")
 
 def apply_parameters(self):
-    """Stuur huidige parameters naar de robot."""
     self.gateway.change_operation_speed(self.operation_speed)
     self.gateway.set_velx(self.velx)
     self.gateway.set_accx(self.accx)
@@ -370,12 +369,6 @@ class DoosanGatewayClient:
     LAMP_DO_MOVE = _config.get("LAMP_DO_MOVE")  # DO2
 
     def set_lamp(self, ready: bool, moving: bool):
-        """
-        Zorgt dat precies Ã©Ã©n stand actief is:
-        - ready=True  => DO1=1, DO2=0
-        - moving=True => DO1=0, DO2=1
-        - allebei False => DO1=0, DO2=0
-        """
         # eerst alles uit
         self.set_digital_output(self.LAMP_DO_READY, 0)  # +1 omdat robot DO's 1..16 zijn
         self.set_digital_output(self.LAMP_DO_MOVE, 0)
@@ -390,11 +383,6 @@ class DoosanGatewayClient:
 
     @staticmethod
     def _parse_check_motion_resp(resp: str) -> int | None:
-        """
-        Parseer een antwoordregel van 'check_motion'.
-        Verwacht iets als: 'OK check_motion 0' of 'OK check_motion 1'.
-        Retourneert 0 of 1, of None als het niet te parsen is.
-        """
         if not resp:
             return None
         parts = resp.strip().split()
