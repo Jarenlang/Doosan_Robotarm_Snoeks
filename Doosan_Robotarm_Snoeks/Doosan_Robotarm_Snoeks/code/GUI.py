@@ -1,10 +1,9 @@
-import tkinter as tk
-from tkinter import ttk, messagebox
 import webbrowser
-
-from qr_scanner import scan_qr_only, scan_barcode_only
+import tkinter as tk
 from backend import *
 from sequence import RobotProgram
+from database import validate_workorder_exists
+from tkinter import ttk, messagebox, simpledialog
 
 cfg = load_config()
 Snoeks_Red = cfg.get("Snoeks_Red")
@@ -191,7 +190,7 @@ class RobotGUI:
             style="Snoeks.TButton",
             width=btn_width,
         )
-        self.btn_home.grid(row=0, column=2, padx=5, pady=5, sticky="ew")
+        self.btn_home.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
 
         self.btn_exit = ttk.Button(
             ctrl_frame,
@@ -202,23 +201,6 @@ class RobotGUI:
         )
         self.btn_exit.grid(row=1, column=0, padx=5, pady=5, sticky="ew")
 
-        self.btn_test_qr = ttk.Button(
-            ctrl_frame,
-            text="Test QR",
-            command=self.on_test_qr,
-            style="Snoeks.TButton",
-            width=btn_width,
-        )
-        self.btn_test_qr.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
-
-        self.btn_test_bar = ttk.Button(
-            ctrl_frame,
-            text="Test barcode",
-            command=self.on_test_barcode,
-            style="Snoeks.TButton",
-            width=btn_width,
-        )
-        self.btn_test_bar.grid(row=1, column=2, padx=5, pady=5, sticky="ew")
 
         ttk.Label(ctrl_frame, text="Sequence", style="Snoeks.TLabel").grid(
             row=0, column=3, sticky="w", padx=5
@@ -238,8 +220,6 @@ class RobotGUI:
         ctrl_frame.grid_columnconfigure(2, weight=1)
         ctrl_frame.grid_columnconfigure(3, weight=1)
 
-        ToolTip(self.btn_test_qr, "Scan alleen een QR-code, log naar scanned.json.")
-        ToolTip(self.btn_test_bar, "Scan alleen een barcode, log naar scanned.json.")
         ToolTip(self.btn_connect, "Verbind met de robot op het opgegeven IP-adres.")
         ToolTip(self.btn_start, "Scan QR en start de sequence na operatorbevestiging.")
         ToolTip(self.btn_stop, "Vraag een stop van de huidige sequence aan.")
@@ -588,6 +568,28 @@ class RobotGUI:
         except Exception as e:
             messagebox.showerror("Param error", str(e))
 
+    def ask_and_validate_workorder(self) -> bool:
+        """
+        Vraag de WORKORDERBASEID via een popup, valideer tegen Workorders.xlsx
+        en sla op in self.program.workorder_id.
+        """
+        workorder = tk.simpledialog.askstring("Workorder invoer","Voer de WORKORDERBASEID in (bijv. 64192-225):",parent=self.root)
+        if not workorder:
+            # Gebruiker heeft geannuleerd of niets ingevuld
+            messagebox.showerror(" workorder niet ingevuld of geannuleerd")
+            return False
+
+        workorder = workorder.strip()
+        try:
+            validate_workorder_exists(workorder)
+        except Exception as e:
+            messagebox.showerror("Workorder-fout", str(e))
+            return False
+
+        self.program.workorder_id = workorder
+        self.append_status(f"Workorder geselecteerd: {workorder}")
+        return True
+
     def on_start_sequence(self):
         # Voorkom dubbele start
         if self.sequence_thread and self.sequence_thread.is_alive():
@@ -603,27 +605,31 @@ class RobotGUI:
             messagebox.showerror("Sequence-fout", f"Onbekende sequence-keuze: {choice}")
             return
 
+        if not self.ask_and_validate_workorder():
+            messagebox.showerror("werkorder niet gezet of ongeldig. sequence afgebroken")
+            return
+
         # Reset alle flags
-        self.program.do_gordels = False
-        self.program.do_armsteunen = False
+        self.program.do_seatbelts = False
+        self.program.do_armrests = False
         self.program.do_buckles = False
 
         # Koppel jouw 3 sequences aan de flags
         # Pas deze mapping aan naar jouw logica in sequence.py
         if choice == "1":
-            #"001" (gordels + buckles)
+            #"001" (seatbelts + buckles)
             self.program.do_buckles = True
         elif choice == "2":
-            #"002" (alleen armsteunen)
-            self.program.do_armsteunen = True
+            #"002" (alleen armrests)
+            self.program.do_armrests = True
         elif choice == "3":
-            #"003" (alleen gordels)
-            self.program.do_gordels = True
+            #"003" (alleen seatbelts)
+            self.program.do_seatbelts = True
 
         self.append_status(
             f"Sequence-selectie: {choice}, "
-            f"gordels={self.program.do_gordels}, "
-            f"armsteunen={self.program.do_armsteunen}, "
+            f"seatbelts={self.program.do_seatbelts}, "
+            f"armrests={self.program.do_armrests}, "
             f"buckles={self.program.do_buckles}"
         )
 
@@ -738,23 +744,6 @@ class RobotGUI:
             webbrowser.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ", new=2)
         except Exception as e:
             pass
-
-    def on_test_qr(self):
-        code = scan_qr_only()
-        if code:
-            messagebox.showinfo("Scan gelukt", f"QR-code: {code}")
-            self.append_status(f"Testscan QR: {code}")
-        else:
-            messagebox.showwarning("Geen code", "Er is geen geldige QR-code gevonden.")
-
-    def on_test_barcode(self):
-        code = scan_barcode_only()
-        if code:
-            messagebox.showinfo("Scan gelukt", f"Barcode: {code}")
-            self.append_status(f"Testscan barcode: {code}")
-        else:
-            messagebox.showwarning("Geen code", "Er is geen geldige barcode gevonden.")
-
 
 if __name__ == "__main__":
     root = tk.Tk()

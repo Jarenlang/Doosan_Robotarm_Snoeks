@@ -1,7 +1,10 @@
+import os
+import json
 import socket
 import threading
-import json
-import os
+from barcode_scanner import scan_part_and_trace, BarcodeScanError
+from database import validate_scanned_parts, write_trace_ids, PartNumberError
+
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "..", "data")
@@ -48,7 +51,7 @@ def save_config(cfg: dict):
 def is_robot_enabled(self) -> bool:
     try:
         return self.gateway.get_digital_input(2) == 1  # pas index aan als je andere DI gebruikt
-    except Exception:
+    except OSError:
         return False
 
 # Laad globale config
@@ -258,7 +261,7 @@ class DoosanGatewayClient:
             if self.sock:
                 try:
                     self.send_raw("quit\n", expect_response=False)
-                except Exception:
+                except OSError:
                     pass
                 self.sock.close()
                 self.sock = None
@@ -285,7 +288,7 @@ class DoosanGatewayClient:
                 try:
                     if self.sock:
                         self.sock.close()
-                except Exception:
+                except OSError:
                     pass
                 self.sock = None
                 raise e
@@ -478,3 +481,61 @@ class DoosanGatewayClient:
             raise RuntimeError(f"Unable to parse tcppose payload in {resp!r}")
 
         return x, y, z, rx, ry, rz
+
+def scan_and_validate_single(program, kind: str, statuscallback=None):
+    """
+    Gebruik in sequence:
+        scan_and_validate_single(self, "frame", statuscallback)
+    'program' is je RobotProgram instance (heeft workorder_id en stopflag).
+    """
+    def log(msg: str):
+        print(msg)
+        if statuscallback:
+            statuscallback(msg)
+
+    if not getattr(program, "workorder_id", None):
+        log("Geen workorder ingesteld; sequence wordt afgebroken.")
+        program.stopflag = True
+        return
+
+    try:
+        log(f"Scan {kind} barcode (P/H)...")
+        part, trace = scan_part_and_trace()
+
+        frame = part if kind == "frame" else None
+        belt = part if kind == "seatbelts" else None
+        buckle = part if kind == "buckles" else None
+
+        validate_scanned_parts(
+            workorder_id=program.workorder_id,
+            scanned_frame_part=frame,
+            scanned_belt_part=belt,
+            scanned_buckle_part=buckle,
+        )
+        log(f"{kind} partnummer is geldig voor workorder {program.workorder_id}.")
+
+        frametrace = trace if kind == "frame" else None
+        belttrace = trace if kind == "seatbelts" else None
+        buckletrace = trace if kind == "buckles" else None
+
+        write_trace_ids(
+            workorder_id=program.workorder_id,
+            frame_trace=frametrace,
+            belt_trace=belttrace,
+            buckle_trace=buckletrace,
+        )
+        log(trace)
+        log(f"trace:{buckletrace}")
+        log(f"trace:{belttrace}")
+        log(f"trace:{frametrace}")
+        log(f"{kind} traceID opgeslagen in Workorders.xlsx.")
+
+    except BarcodeScanError as e:
+        log(f"Barcode scan fout ({kind}): {e}")
+        program._stop_flag = True
+    except PartNumberError as e:
+        log(f"Partnummer mismatch ({kind}): {e}")
+        program._stop_flag = True
+    except Exception as e:
+        log(f"Onbekende fout bij {kind}-scan: {e}")
+        program._stop_flag = True

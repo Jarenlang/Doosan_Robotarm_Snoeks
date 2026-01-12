@@ -1,5 +1,6 @@
-from backend import (load_config, save_config, load_coordinates, DoosanGatewayClient, is_robot_enabled, sensor_amovel)
 import time
+from backend import (load_config, save_config, load_coordinates, DoosanGatewayClient, is_robot_enabled, sensor_amovel, scan_and_validate_single)
+
 
 class RobotProgram:
     def __init__(self, gateway: DoosanGatewayClient):
@@ -17,9 +18,10 @@ class RobotProgram:
         self._stop_flag = False
 
         # QR / product flags
-        self.do_gordels = False
-        self.do_armsteunen = False
+        self.do_seatbelts = False
+        self.do_armrests = False
         self.do_buckles = False
+        self.workorder_id: str | None = None
 
     # ----------------- Basis helpers -----------------
 
@@ -55,11 +57,18 @@ class RobotProgram:
 
     # ----------------- Voorbeeld-sequence -----------------
 
-    def sequence_seatbelt(self, statuscallback=None):
+    def sequence_buckles(self, statuscallback=None):
         def log(msg: str):
             print(msg)
             if statuscallback:
                 statuscallback(msg)
+        log("buckles")
+
+        scan_and_validate_single(self, "buckles", statuscallback)
+        if self._stop_flag:
+            return
+        log("successsssssssssssssssssssssssssssssssssssssssssss")
+
 
     def sequence_armrest(self, statuscallback=None):
         def log(msg: str):
@@ -105,22 +114,17 @@ class RobotProgram:
             log("Sequence gestopt")
             return
 
-        # 4) Naar tussenstop
-        log("Naar tussenstop armrest")
-        self.gateway.amovej(*self.pj_home, self.velx, self.accx)
-        self.gateway.wait_until_stopped()
-        if self._stop_flag:
-            log("Sequence gestopt")
-            return
-
         self.gateway.set_digital_output(2, 0)
 
-
-    def sequence_gordelspoelen(self, statuscallback=None):
+    def sequence_seatbelts(self, statuscallback=None):
         def log(msg: str):
             print(msg)
             if statuscallback:
                 statuscallback(msg)
+
+        scan_and_validate_single(self, "seatbelts", statuscallback)
+        if self._stop_flag:
+            return
 
         # Seatbelt buffer, vooraf gaand aan het proces wordt gekeken of de buffer vol is.
         buffer_leeg_seatbelt_1 = self.gateway.get_digital_input(9)  # Code kijkt hier naar pin 17
@@ -138,41 +142,6 @@ class RobotProgram:
 
         self.gateway.set_digital_output(16,0)  # Naar pin 16 (warning light) wordt geen signiaal meer gestuurd (0)
 
-        # 1) Naar home
-        log("Naar home")
-        self.gateway.amovej(*self.pj_home, self.velx, self.accx)
-        self.gateway.wait_until_stopped()
-        if self._stop_flag:
-            log("Sequence gestopt")
-            return
-
-        log("Naar armrest pick")
-        self.gateway.amovel(*self.p_armrest_pick, self.velx, self.accx)
-        self.gateway.wait_until_stopped()
-        if self._stop_flag:
-            log("Sequence gestopt")
-            return
-
-        # 3) Naar beneden en zuiger aan
-        sensor_amovel(self, base_pos=self.p_armrest_pick, force_limit=7, direction="z-", pre_distance=150.0, return_direction="y+", return_distance=200.0)
-
-        # 4) Naar tussenstop
-        log("Naar tussenstop armrest")
-        self.gateway.amovej(*self.pj_home, self.velx, self.accx)
-        self.gateway.wait_until_stopped()
-        if self._stop_flag:
-            log("Sequence gestopt")
-            return
-
-        # 4) Naar tussenstop
-        log("Naar tussenstop armrest")
-        self.gateway.amovej(*self.pj_home, self.velx, self.accx)
-        self.gateway.wait_until_stopped()
-        if self._stop_flag:
-            log("Sequence gestopt")
-            return
-
-        self.gateway.set_digital_output(2, 0)
 
     def sequence_pick_and_place(self, statuscallback=None):
         def log(msg: str):
@@ -192,10 +161,10 @@ class RobotProgram:
 
         # Bepaal welke sequence
         if self.do_buckles:
-            self.sequence_seatbelt(statuscallback)
-        elif self.do_armsteunen:
+            self.sequence_buckles(statuscallback)
+        elif self.do_armrests:
             self.sequence_armrest(statuscallback)
-        elif self.do_gordels:
-            self.sequence_gordelspoelen(statuscallback)
+        elif self.do_seatbelts:
+            self.sequence_seatbelts(statuscallback)
         else:
             log("Geen geldig product gekozen uit QR-code, sequence wordt niet uitgevoerd.")
