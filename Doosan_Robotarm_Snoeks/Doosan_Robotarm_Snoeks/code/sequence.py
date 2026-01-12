@@ -12,7 +12,7 @@ class RobotProgram:
 
         coord_cfg = load_coordinates()
         for key, value in coord_cfg.items():
-            if key.startswith("p_"):
+            if key.startswith("p_") or key.startswith("pj_"):
                 setattr(self, key, value)
         self._stop_flag = False
 
@@ -81,7 +81,7 @@ class RobotProgram:
 
         # 1) Naar home
         log("Naar home")
-        self.gateway.amovej(*self.p_j_home, self.velx, self.accx)
+        self.gateway.amovej(*self.pj_home, self.velx, self.accx)
         self.gateway.wait_until_stopped()
         if self._stop_flag:
             log("Sequence gestopt")
@@ -99,7 +99,7 @@ class RobotProgram:
 
         # 4) Naar tussenstop
         log("Naar tussenstop armrest")
-        self.gateway.amovej(*self.p_j_home, self.velx, self.accx)
+        self.gateway.amovej(*self.pj_home, self.velx, self.accx)
         self.gateway.wait_until_stopped()
         if self._stop_flag:
             log("Sequence gestopt")
@@ -107,7 +107,7 @@ class RobotProgram:
 
         # 4) Naar tussenstop
         log("Naar tussenstop armrest")
-        self.gateway.amovej(*self.p_j_home, self.velx, self.accx)
+        self.gateway.amovej(*self.pj_home, self.velx, self.accx)
         self.gateway.wait_until_stopped()
         if self._stop_flag:
             log("Sequence gestopt")
@@ -140,7 +140,7 @@ class RobotProgram:
 
         # 1) Naar home
         log("Naar home")
-        self.gateway.amovej(*self.p_j_home, self.velx, self.accx)
+        self.gateway.amovej(*self.pj_home, self.velx, self.accx)
         self.gateway.wait_until_stopped()
         if self._stop_flag:
             log("Sequence gestopt")
@@ -158,7 +158,7 @@ class RobotProgram:
 
         # 4) Naar tussenstop
         log("Naar tussenstop armrest")
-        self.gateway.amovej(*self.p_j_home, self.velx, self.accx)
+        self.gateway.amovej(*self.pj_home, self.velx, self.accx)
         self.gateway.wait_until_stopped()
         if self._stop_flag:
             log("Sequence gestopt")
@@ -166,7 +166,7 @@ class RobotProgram:
 
         # 4) Naar tussenstop
         log("Naar tussenstop armrest")
-        self.gateway.amovej(*self.p_j_home, self.velx, self.accx)
+        self.gateway.amovej(*self.pj_home, self.velx, self.accx)
         self.gateway.wait_until_stopped()
         if self._stop_flag:
             log("Sequence gestopt")
