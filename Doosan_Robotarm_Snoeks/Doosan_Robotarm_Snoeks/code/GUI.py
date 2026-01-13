@@ -317,7 +317,6 @@ class RobotGUI:
             self.logolabel = ttk.Label(logo_frame, image=logosmall, style="Snoeks.TLabel")
             self.logolabel.pack(anchor="w")
         except Exception as e:
-            # Als het logo niet geladen kan worden, gewoon niets tonen
             print(f"Kon logo niet laden: {e}")
 
         # ------------ RECHTERKANT: STATUS / TERMINAL ------------

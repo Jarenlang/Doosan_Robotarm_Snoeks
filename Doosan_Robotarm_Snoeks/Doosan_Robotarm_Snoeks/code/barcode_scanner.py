@@ -4,7 +4,6 @@ from pyzbar import pyzbar
 webcam_id = 2
 
 class BarcodeScanError(Exception):
-    """Wordt gegooid als er iets misgaat bij het scannen/parsen van barcodes."""
     pass
 
 def scan_camera(required_letters=None, zoom_factors=None):
@@ -85,10 +84,6 @@ def scan_camera(required_letters=None, zoom_factors=None):
     return used_barcodes
 
 def scan_part_and_trace(required_letters=("P", "H")):
-    """
-    Start de camera en retourneer (partnumber, trace_id) als strings zonder
-    letterprefix. Verwacht dat de scanner codes in het formaat P123..., H456... vindt.
-    """
     used_barcodes = scan_camera(required_letters=required_letters)
     if not used_barcodes:
         raise BarcodeScanError("Geen barcodes gevonden.")

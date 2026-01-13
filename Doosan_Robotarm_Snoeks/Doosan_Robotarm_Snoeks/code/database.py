@@ -1,6 +1,5 @@
 import openpyxl
 from pathlib import Path
-import os
 
 # Pad naar het Excel‑bestand
 BASEDIR = Path(__file__).resolve().parent
@@ -12,10 +11,10 @@ SHEET_INDEX = 1            # "pagina twee" = tweede werkblad (index 1)
 COL_WORKORDER = "A"        # voorbeeld: kolom met WORKORDERBASEID
 COL_PARTID = "E"           # kolom PARTID
 COL_TRACEID = "J"          # kolom TRACEID
+COL_DESCRIPTION = "H"
 
 
 class PartNumberError(Exception):
-    """Geraised als het gescande partnummer niet overeenkomt met de database."""
     pass
 
 
@@ -28,10 +27,7 @@ def _load_sheet():
 
 
 def _find_rows_for_workorder(ws, workorder_id: str):
-    """
-    Vind alle rijen voor een bepaalde workorder (WORKORDERBASEID)
-    op pagina twee.
-    """
+
     rows = []
     for row in range(2, ws.max_row + 1):  # aannemen rij 1 = header
         cell_value = str(ws[f"{COL_WORKORDER}{row}"].value or "").strip()
@@ -41,7 +37,6 @@ def _find_rows_for_workorder(ws, workorder_id: str):
 
 
 def _get_partids_for_rows(ws, rows):
-    """Geef set van PARTID waarden voor de opgegeven rijen."""
     partids = set()
     for r in rows:
         val = ws[f"{COL_PARTID}{r}"].value
@@ -50,10 +45,6 @@ def _get_partids_for_rows(ws, rows):
     return partids
 
 def validate_workorder_exists(workorder_id: str) -> None:
-    """
-    Controleer of de opgegeven WORKORDERBASEID voorkomt op pagina twee.
-    Raise ValueError als hij niet bestaat.
-    """
     wb, ws = _load_sheet()
     rows = _find_rows_for_workorder(ws, workorder_id)
     if not rows:
@@ -66,12 +57,6 @@ def validate_scanned_parts(workorder_id: str,
                            scanned_frame_part: str | None,
                            scanned_belt_part: str | None,
                            scanned_buckle_part: str | None):
-    """
-    Controleer of de gescande partnummers voorkomen in de Workorders‑database
-    voor de gegeven workorder, exclusief armrestcovers.
-
-    Roept PartNumberError aan het begin van de subsequence als er een mismatch is.
-    """
     wb, ws = _load_sheet()
     rows = _find_rows_for_workorder(ws, workorder_id)
     if not rows:
@@ -102,13 +87,7 @@ def write_trace_ids(workorder_id: str,
                     frame_trace: str | None,
                     belt_trace: str | None,
                     buckle_trace: str | None):
-    """
-    Schrijf de Trace IDs (batchnummers) naar de TRACEID‑kolom van de juiste rijen
-    in pagina twee, pas NA afronden van de sequence.
 
-    Benchframe Trace ID moet uniek zijn; belts/buckles mogen gelijk zijn.
-    """
-    COL_DESCRIPTION = "H"
     wb, ws = _load_sheet()
     rows = _find_rows_for_workorder(ws, workorder_id)
     if not rows:

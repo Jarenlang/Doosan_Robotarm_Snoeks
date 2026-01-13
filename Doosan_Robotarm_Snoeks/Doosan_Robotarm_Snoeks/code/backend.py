@@ -119,7 +119,6 @@ def sensor_amovel(
     self.gateway.amovel(*target1, 10, 50)
 
     if self._stop_flag:
-        log("Sequence gestopt voor force-check.")
         return
 
     # -------- force monitor --------
@@ -138,7 +137,6 @@ def sensor_amovel(
         if force_value is not None:
             log(f"Huidige force: {force_value:.2f} N")
             if force_value >= force_limit:
-                log("Force-limiet bereikt, directe stop.")
                 try:
                     self.gateway.stop()
                 except Exception as e:
@@ -148,16 +146,10 @@ def sensor_amovel(
 
     # DO2 aan als trigger bereikt is
     if trigger_reached:
-        try:
-            self.gateway.set_digital_output(2, 1)  # DO2 hoog
-            log("DO2 = 1 gezet.")
-        except Exception as e:
-            log(f"Fout bij DO2 zetten: {e}")
+        self.gateway.set_digital_output(2, 1)
 
         try:
             curx, cury, curz, currx, curry, currz = self.gateway.get_tcppose()
-            log(f"sensor_amovel actuele TCP na stop voor kleine lift: ")
-            log(f"{curx:.1f}, {cury:.1f}, {curz:.1f}, {currx:.1f}, {curry:.1f}, {currz:.1f}")
 
             lift_mm = 5.0  # hier kun je 4.0 of 5.0 van maken
             lift_target = (
@@ -168,12 +160,9 @@ def sensor_amovel(
                 curry,
                 currz,
             )
-
-            log(f"sensor_amovel kleine lift van {lift_mm} mm naar {lift_target}")
             self.gateway.change_operation_speed(self.operation_speed)
             self.gateway.amovel(*lift_target, self.velx, self.accx)
             self.gateway.wait_until_stopped()
-            log("sensor_amovel kleine lift klaar.")
         except Exception as e:
             log(f"Fout bij kleine lift-beweging: {e}")
 
@@ -210,15 +199,12 @@ def sensor_amovel(
         log(f"sensor_amovel: tweede beweging vanaf TCP naar {target2}")
         self.gateway.amovel(*target2, self.velx, self.accx)
         self.gateway.wait_until_stopped()
-        log("sensor_amovel: tweede beweging klaar.")
     else:
-        # als force-limiet nooit bereikt is: optioneel terug naar base_pos zoals vroeger
         self.gateway.change_operation_speed(self.operation_speed)
         up_target = [bx, by, bz, brx, bry, brz]
         log(f"sensor_amovel: force-limiet niet bereikt, terug naar {up_target}")
         self.gateway.amovel(*up_target, self.velx, self.accx)
         self.gateway.wait_until_stopped()
-        log("sensor_amovel: klaar (terug naar base_pos).")
 
 def apply_parameters(self):
     self.gateway.change_operation_speed(self.operation_speed)
@@ -322,16 +308,10 @@ class DoosanGatewayClient:
     # ---------------- Digital / analog IO helpers ---------------- #
 
     def set_digital_output(self, index: int, value: int):
-        """
-        Zet een digitale uitgang (0/1).
-        """
         cmd = f"digout {index} {int(value)}\n"
         return self.send_raw(cmd)
 
     def get_digital_input(self, index: int) -> int:
-        """
-        Lees een digitale ingang (0/1). Retourneert 0 of 1.
-        """
         resp = self.send_raw(f"digin {index}\n")
         if not resp:
             raise RuntimeError("Empty response from digin")
@@ -349,16 +329,10 @@ class DoosanGatewayClient:
         raise RuntimeError(f"digin error response: {resp!r}")
 
     def set_analog_output(self, ch: int, value: float):
-        """
-        Zet een analoge uitgang. Schaal/units afhankelijk van je hardware-config.
-        """
         cmd = f"anout {ch} {value}\n"
         return self.send_raw(cmd)
 
     def get_analog_input(self, ch: int) -> float:
-        """
-        Lees een analoge ingang. Retourneert float.
-        """
         resp = self.send_raw(f"anin {ch}\n")
         if not resp:
             raise RuntimeError("Empty response from anin")
@@ -483,11 +457,6 @@ class DoosanGatewayClient:
         return x, y, z, rx, ry, rz
 
 def scan_and_validate_single(program, kind: str, statuscallback=None):
-    """
-    Gebruik in sequence:
-        scan_and_validate_single(self, "frame", statuscallback)
-    'program' is je RobotProgram instance (heeft workorder_id en stopflag).
-    """
     def log(msg: str):
         print(msg)
         if statuscallback:
@@ -524,10 +493,6 @@ def scan_and_validate_single(program, kind: str, statuscallback=None):
             belt_trace=belttrace,
             buckle_trace=buckletrace,
         )
-        log(trace)
-        log(f"trace:{buckletrace}")
-        log(f"trace:{belttrace}")
-        log(f"trace:{frametrace}")
         log(f"{kind} traceID opgeslagen in Workorders.xlsx.")
 
     except BarcodeScanError as e:

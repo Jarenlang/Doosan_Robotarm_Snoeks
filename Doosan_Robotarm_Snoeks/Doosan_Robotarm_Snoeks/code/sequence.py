@@ -33,7 +33,6 @@ class RobotProgram:
         save_config(self.config)
 
     def apply_parameters(self):
-        """Stuur huidige parameters naar de robot."""
         self.gateway.change_operation_speed(self.operation_speed)
         self.gateway.set_velx(self.velx)
         self.gateway.set_accx(self.accx)
@@ -62,12 +61,10 @@ class RobotProgram:
             print(msg)
             if statuscallback:
                 statuscallback(msg)
-        log("buckles")
 
         scan_and_validate_single(self, "buckles", statuscallback)
         if self._stop_flag:
             return
-        log("successsssssssssssssssssssssssssssssssssssssssssss")
 
 
     def sequence_armrest(self, statuscallback=None):
