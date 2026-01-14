@@ -5,34 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a1f64d59-c2d3-4427-9648-0ff95c7ef0f1" name="Changes" comment="overbodig commenten wegwerken">
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Doosan_Robotarm_Snoeks.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Doosan_Robotarm_Snoeks.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/.idea/DoosanProject.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/.idea/misc.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/.idea/vcs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/assets/Snoeks.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/assets/download.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/code/GUI.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/code/backend.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/code/barcode_scanner.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/code/database.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/code/reciever_code.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/code/sequence.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/data/Workorders.xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/data/config.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/data/coordinates.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/officiele documentatie/CODE_OF_CONDUCT.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/officiele documentatie/CONTRIBUTING.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/officiele documentatie/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/officiele documentatie/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/officiele documentatie/SECURITY.md" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,6 +27,9 @@
     &quot;accountId&quot;: &quot;d0c28368-c850-4a99-94f9-9ac678bfc703&quot;
   }
 }</component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
   &quot;associatedIndex&quot;: 5
@@ -74,7 +50,8 @@
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;master&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/eeuwe/PycharmProjects/Doosan_Robotarm_Snoeks/Doosan_Robotarm_Snoeks/code&quot;
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/eeuwe/PycharmProjects/Doosan_Robotarm_Snoeks/Doosan_Robotarm_Snoeks/code&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;aDefault&quot;
   }
 }</component>
   <component name="RecentsManager">
@@ -201,7 +178,15 @@
       <option name="project" value="LOCAL" />
       <updated>1767953839211</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="overbodig commenten wegwerken">
+      <option name="closed" value="true" />
+      <created>1768396444655</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1768396444655</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
