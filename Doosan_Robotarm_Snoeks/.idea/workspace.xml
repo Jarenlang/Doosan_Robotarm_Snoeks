@@ -5,9 +5,34 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a1f64d59-c2d3-4427-9648-0ff95c7ef0f1" name="Changes" comment="overbodig commenten wegwerken">
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Doosan_Robotarm_Snoeks.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Doosan_Robotarm_Snoeks.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/code/backend.py" beforeDir="false" afterPath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/code/backend.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/code/sequence.py" beforeDir="false" afterPath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/code/sequence.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/.idea/DoosanProject.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/assets/Snoeks.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/assets/download.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/code/GUI.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/code/backend.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/code/barcode_scanner.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/code/database.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/code/reciever_code.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/code/sequence.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/data/Workorders.xlsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/data/config.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/data/coordinates.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/officiele documentatie/CODE_OF_CONDUCT.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/officiele documentatie/CONTRIBUTING.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/officiele documentatie/LICENSE" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/officiele documentatie/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/officiele documentatie/SECURITY.md" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,20 +63,20 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "Python.GUI.executor": "Run",
-    "Python.doosan_GUI.executor": "Run",
-    "Python.doosan_backend.executor": "Run",
-    "Python.runGUI.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "master",
-    "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "C:/Users/eeuwe/PycharmProjects/Doosan_Robotarm_Snoeks/Doosan_Robotarm_Snoeks/code"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Python.GUI.executor&quot;: &quot;Run&quot;,
+    &quot;Python.doosan_GUI.executor&quot;: &quot;Run&quot;,
+    &quot;Python.doosan_backend.executor&quot;: &quot;Run&quot;,
+    &quot;Python.runGUI.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/eeuwe/PycharmProjects/Doosan_Robotarm_Snoeks/Doosan_Robotarm_Snoeks/code&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\eeuwe\PycharmProjects\Doosan_Robotarm_Snoeks\Doosan_Robotarm_Snoeks\code" />
@@ -71,7 +96,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Doosan_Robotarm_Snoeks/code/GUI.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/code/GUI.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
