@@ -1,7 +1,6 @@
 import time
 from backend import (load_config, save_config, load_coordinates, DoosanGatewayClient, is_robot_enabled, sensor_amovel, scan_and_validate_single)
 
-
 class RobotProgram:
     def __init__(self, gateway: DoosanGatewayClient):
         self.gateway = gateway
@@ -120,6 +119,23 @@ class RobotProgram:
                 statuscallback(msg)
 
         self.gateway.set_digital_output(1, 0)
+
+        # Seatbelt buffer, vooraf gaand aan het proces wordt gekeken of de buffer vol is.
+        buffer_leeg_seatbelt_1 = self.gateway.get_digital_input(9)
+        buffer_leeg_seatbelt_2 = self.gateway.get_digital_input(10)
+        buffer_leeg_seatbelt_3 = self.gateway.get_digital_input(11)
+
+        if buffer_leeg_seatbelt_1 and buffer_leeg_seatbelt_2 and buffer_leeg_seatbelt_3:
+            log("Buffer seatbelt full")
+
+        if not buffer_leeg_seatbelt_1 or not buffer_leeg_seatbelt_2 or not buffer_leeg_seatbelt_3:
+            self.gateway.set_digital_output(16, 1)
+            log("All seatbelt buffers are empty")
+            self.wait_for_operator_confirm(statuscallback)
+
+        scan_and_validate_single(self, "seatbelts", statuscallback)
+
+        self.gateway.set_digital_output(16, 0)
 
         log("home")
         self.gateway.amovej(*self.pj_home, self.velx, self.accx)
