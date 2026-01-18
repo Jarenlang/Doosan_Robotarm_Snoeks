@@ -44,6 +44,7 @@ def _get_partids_for_rows(ws, rows):
             partids.add(str(val).strip())
     return partids
 
+
 def validate_workorder_exists(workorder_id: str) -> None:
     wb, ws = _load_sheet()
     rows = _find_rows_for_workorder(ws, workorder_id)

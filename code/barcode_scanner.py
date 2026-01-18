@@ -83,6 +83,7 @@ def scan_camera(required_letters=None, zoom_factors=None):
     cv2.destroyAllWindows()
     return used_barcodes
 
+
 def scan_part_and_trace(required_letters=("P", "H")):
     used_barcodes = scan_camera(required_letters=required_letters)
     if not used_barcodes:

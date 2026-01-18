@@ -144,14 +144,13 @@ def sensor_amovel(
                 trigger_reached = True
                 break
 
-    # DO2 aan als trigger bereikt is
     if trigger_reached:
         self.gateway.set_digital_output(2, 1)
 
         try:
             curx, cury, curz, currx, curry, currz = self.gateway.get_tcppose()
 
-            lift_mm = 5.0  # hier kun je 4.0 of 5.0 van maken
+            lift_mm = 8.0
             lift_target = (
                 curx - dx1 * lift_mm,
                 cury - dy1 * lift_mm,
