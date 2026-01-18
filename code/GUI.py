@@ -612,7 +612,7 @@ class RobotGUI:
             if self._is_connection_lost_error(e):
                 self._set_disconnected_state(str(e))
 
-        self.root.after(500, self._update_status_from_robot)
+        self.root.after(5, self._update_status_from_robot)
 
     def on_apply_params(self):
         try:
@@ -629,7 +629,7 @@ class RobotGUI:
     def ask_and_validate_workorder(self) -> bool:
         workorder = simpledialog.askstring(
             "Workorder invoer",
-            "Voer de WORKORDERBASEID in (bijv. 64192-225):",
+            "Voer de WORKORDERBASEID in:",
             parent=self.root,
         )
         if not workorder:
