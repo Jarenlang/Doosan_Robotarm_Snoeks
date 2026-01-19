@@ -73,17 +73,20 @@ class RobotProgram:
             if statuscallback:
                 statuscallback(msg)
 
-        buffer_vol = self.gateway.get_digital_input(16)
+        while True:
+            buffer_vol = self.gateway.get_digital_input(16)
 
-        if not buffer_vol:
-            self.gateway.set_digital_output(16, 1)
-            log("Armrest cover buffer is empty")  # De tekst "Armrest cover buffer is empty"
-            self.wait_for_operator_confirm(statuscallback)
+            if buffer_vol:
+                log("Buffer filled")
+                break
 
-        if buffer_vol:  # Wanneer buffer vol is en de knop niet ingedrukt
-            log("Buffer filled")  # De tekst "Buffer filled, waiting for operator"
+            self.gateway.set_digital_output(4, 1)
+            time.sleep(0.5)
+            self.gateway.set_digital_output(4, 0)
+            time.sleep(0.1)
 
-        self.gateway.set_digital_output(16, 0)
+        self.wait_for_operator_confirm(statuscallback)
+        self.gateway.set_digital_output(4, 0)
 
         # 1) Naar home
         log("Naar home")
@@ -94,30 +97,137 @@ class RobotProgram:
             return
 
         log("Naar armrest pick")
-        self.gateway.amovel(*self.p_armrest_pick, self.velx, self.accx)
+        self.gateway.amovej(*self.pj_armrest_pick, self.velx, self.accx)
         self.gateway.wait_until_stopped()
         if self._stop_flag:
             log("Sequence gestopt")
             return
 
         # 3) Naar beneden en zuiger aan
-        sensor_amovel(self, base_pos=self.p_armrest_pick, force_limit=7, direction="z-", pre_distance=150.0, return_direction="y+", return_distance=200.0)
+        sensor_amovel(self, base_pos=self.p_armrest_pick, force_limit=12, direction="z+", pre_distance=250.0, return_direction="y+", return_distance=200.0)
 
         # 4) Naar tussenstop
         log("Naar tussenstop armrest")
-        self.gateway.amovej(*self.pj_home, self.velx, self.accx)
+        self.gateway.amovej(*self.pj_armrest_tussenstop, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        log("Naar infront")
+        self.gateway.amovej(*self.pj_armrest_infront, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        log("Naar inframe")
+        self.gateway.amovel(*self.p_armrest_inframe, self.velx, self.accx)
         self.gateway.wait_until_stopped()
         if self._stop_flag:
             log("Sequence gestopt")
             return
 
         self.gateway.set_digital_output(2, 0)
+        time.sleep(0.5)
+
+        log("Naar infront")
+        self.gateway.amovej(*self.pj_armrest_infront, self.velx, (self.accx/4))
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        # 4) Naar home
+        log("Naar home")
+        self.gateway.amovej(*self.pj_home, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        log("Naar armrest pick")
+        self.gateway.amovej(*self.pj_armrest_pick, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        # 3) Naar beneden en zuiger aan
+        sensor_amovel(self, base_pos=self.p_armrest_pick, force_limit=12, direction="z+", pre_distance=250.0,return_direction="y+", return_distance=200.0)
+
+        # 4) Naar tussenstop
+        log("Naar tussenstop armrest")
+        self.gateway.amovej(*self.pj_armrest_tussenstop, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        log("Naar infront")
+        self.gateway.amovej(*self.pj_armrest_infront2, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        log("Naar inframe")
+        self.gateway.amovel(*self.p_armrest_inframe2, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        log("Naar inframe")
+        self.gateway.amovel(*self.p_armrest_inframe_down, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        self.gateway.set_digital_output(2, 0)
+        time.sleep(0.5)
+
+        log("Naar infront")
+        self.gateway.amovej(*self.pj_armrest_infront2, self.velx, (self.accx/4))
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        # 4) Naar tussenstop
+        log("Naar home")
+        self.gateway.amovej(*self.pj_home, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
 
     def sequence_seatbelts(self, statuscallback=None):
         def log(msg: str):
             print(msg)
             if statuscallback:
                 statuscallback(msg)
+
+        while True:
+            try:
+                s13 = self.gateway.get_digital_input(13)
+                s14 = self.gateway.get_digital_input(14)
+                s15 = self.gateway.get_digital_input(15)
+            except Exception:
+                s13 = s14 = s15 = 0
+
+            if not (s13 and s14 and s15):
+                self.gateway.set_digital_output(4, 1)
+                time.sleep(0.5)
+                self.gateway.set_digital_output(4, 0)
+                time.sleep(0.1)
+
+                continue
+
+            log("Alle seatbelt-buffers gevuld, sequence gaat verder.")
+            self.gateway.set_digital_output(4, 0)
+            break
 
         self.gateway.set_digital_output(1, 0)
 
@@ -394,13 +504,4 @@ class RobotProgram:
 
         # Wachten op operator
         self.wait_for_operator_confirm(statuscallback)
-
-        # Bepaal welke sequence
-        if self.do_buckles:
-            self.sequence_buckles(statuscallback)
-        elif self.do_armrests:
-            self.sequence_armrest(statuscallback)
-        elif self.do_seatbelts:
-            self.sequence_seatbelts(statuscallback)
-        else:
-            log("Geen geldig product gekozen uit QR-code, sequence wordt niet uitgevoerd.")
+        self.sequence_armrest(statuscallback)

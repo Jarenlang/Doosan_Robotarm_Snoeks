@@ -116,7 +116,7 @@ def sensor_amovel(
     ]
 
     log(f"sensor_amovel: eerste beweging naar {target1}")
-    self.gateway.amovel(*target1, 10, 50)
+    self.gateway.amovel(*target1, 20, 50)
 
     if self._stop_flag:
         return
