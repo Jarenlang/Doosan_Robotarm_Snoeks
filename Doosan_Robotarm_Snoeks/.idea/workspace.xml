@@ -4,20 +4,24 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a1f64d59-c2d3-4427-9648-0ff95c7ef0f1" name="Changes" comment="overbodig commenten wegwerken">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="a1f64d59-c2d3-4427-9648-0ff95c7ef0f1" name="Changes" comment="eerste code na meeting met docent en begeleider" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="ROOT_SYNC" value="SYNC" />
+    <option name="UPDATE_TYPE" value="REBASE" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
+  &quot;history&quot;: [
+    {
+      &quot;assignee&quot;: &quot;Jarenlang&quot;
+    }
+  ],
   &quot;lastFilter&quot;: {
-    &quot;state&quot;: &quot;OPEN&quot;,
     &quot;assignee&quot;: &quot;Jarenlang&quot;
   }
 }</component>
@@ -29,6 +33,7 @@
 }</component>
   <component name="ProblemsViewState">
     <option name="selectedTabId" value="CurrentFile" />
+    <option name="sortBySeverity" value="false" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
@@ -186,8 +191,43 @@
       <option name="project" value="LOCAL" />
       <updated>1768396444655</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="new gui layout">
+      <option name="closed" value="true" />
+      <created>1768401715807</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1768401715807</updated>
+    </task>
+    <task id="LOCAL-00013" summary="general updates voor de robot ondersteboven">
+      <option name="closed" value="true" />
+      <created>1768758860271</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1768758860271</updated>
+    </task>
+    <task id="LOCAL-00014" summary="eerste code na meeting met docent en begeleider">
+      <option name="closed" value="true" />
+      <created>1768831542539</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1768831542539</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="totaal nieuw project" />
@@ -198,6 +238,9 @@
     <MESSAGE value="huidig functionele code!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" />
     <MESSAGE value="huidig functionele code V2!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" />
     <MESSAGE value="overbodig commenten wegwerken" />
-    <option name="LAST_COMMIT_MESSAGE" value="overbodig commenten wegwerken" />
+    <MESSAGE value="new gui layout" />
+    <MESSAGE value="general updates voor de robot ondersteboven" />
+    <MESSAGE value="eerste code na meeting met docent en begeleider" />
+    <option name="LAST_COMMIT_MESSAGE" value="eerste code na meeting met docent en begeleider" />
   </component>
 </project>
