@@ -1,7 +1,11 @@
 import os
+import sys
+import time
 import json
 import socket
+import signal
 import threading
+import subprocess
 from barcode_scanner import scan_part_and_trace, BarcodeScanError
 from database import validate_scanned_parts, write_trace_ids, PartNumberError
 
@@ -11,6 +15,86 @@ DATA_DIR = os.path.join(BASE_DIR, "..", "data")
 
 CONFIG_FILE = os.path.join(DATA_DIR, "config.json")
 COORD_FILE = os.path.join(DATA_DIR, "coordinates.json")
+LATEST_BUCKLE_FILE = os.path.join(DATA_DIR, "latest_buckle_detection.json")
+
+def move_to_detected_buckle(
+    gateway,
+    velx: float,
+    accx: float,
+    statuscallback=None,
+    timeout: float = 15.0,
+    stopflag_getter=None,
+):
+    """Wacht op buckle-detectie (JSON) en voer pick-sequence uit."""
+    def log(msg: str):
+        print(msg)
+        if statuscallback:
+            statuscallback(msg)
+
+    t0 = time.time()
+    data = None
+    while time.time() - t0 < timeout:
+        if stopflag_getter and stopflag_getter():
+            log("Sequence gestopt tijdens wachten op buckle.")
+            return
+        data = load_latest_buckle()
+        if data and data.get("buckle_found"):
+            break
+        time.sleep(0.5)
+
+    if not data or not data.get("buckle_found"):
+        log("Geen buckle gevonden binnen timeout.")
+        return
+
+    sp = data.get("start_position") or {}
+    gp = data.get("grip_position") or {}
+
+    start_pose = [
+        sp.get("x", 0.0),
+        sp.get("y", 0.0),
+        sp.get("z", 0.0),
+        sp.get("rx", 0.0),
+        sp.get("ry", 0.0),
+        sp.get("rz", 0.0),
+    ]
+    grip_pose = [
+        gp.get("x", 0.0),
+        gp.get("y", 0.0),
+        gp.get("z", 0.0),
+        gp.get("rx", 0.0),
+        gp.get("ry", 0.0),
+        gp.get("rz", 0.0),
+    ]
+
+    log(f"Buckle gevonden, beweeg naar startpositie: {start_pose}")
+    gateway.amovel(*start_pose, velx, accx)
+    gateway.wait_until_stopped()
+    if stopflag_getter and stopflag_getter():
+        log("Sequence gestopt.")
+        return
+
+    log(f"Beweeg naar grippositie: {grip_pose}")
+    gateway.amovel(*grip_pose, velx, accx)
+    gateway.wait_until_stopped()
+
+    if stopflag_getter and stopflag_getter():
+        log("Sequence gestopt.")
+        return
+
+    gateway.set_digital_output(1, 1)
+
+    # 100 mm omhoog in z-richting
+    x, y, z, rx, ry, rz = grip_pose
+    up_pose = [x, y, z - 220.0, rx, ry, rz]
+
+    log(f"Beweeg 100mm omhoog naar: {up_pose}")
+    gateway.amovel(*up_pose, velx, accx)
+    gateway.wait_until_stopped()
+
+    if stopflag_getter and stopflag_getter():
+        log("Sequence gestopt na omhoog bewegen.")
+        return
+
 
 def load_config():
     if not os.path.exists(CONFIG_FILE):
@@ -31,6 +115,15 @@ def load_config():
 
     with open(CONFIG_FILE, "r", encoding="utf-8") as f:
         return json.load(f)
+
+def load_latest_buckle() -> dict | None:
+    if not os.path.exists(LATEST_BUCKLE_FILE):
+        return None
+    try:
+        with open(LATEST_BUCKLE_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return None
 
 def load_coordinates() -> dict:
     if not os.path.exists(COORD_FILE):
@@ -224,6 +317,7 @@ class DoosanGatewayClient:
         self.lock = threading.Lock()
 
         # --- status-poller extra's ---
+        self.vision_proc = None
         self._status_lock = threading.Lock()
         self._last_status: str | None = None
         self._poll_thread: threading.Thread | None = None
@@ -370,6 +464,47 @@ class DoosanGatewayClient:
             return None
 
     # ---------------- Status-poller API ---------------- #
+
+    def start_buckle_vision(self, statuscallback=None):
+        if self.vision_proc is not None and self.vision_proc.poll() is None:
+            return
+        basedir = os.path.dirname(os.path.abspath(__file__))
+        script = os.path.join(basedir, "Buckle_detectie.py")
+        try:
+            self.vision_proc = subprocess.Popen(
+                [sys.executable, script],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            if statuscallback:
+                statuscallback("Buckle-vision gestart.")
+        except Exception as e:
+            if statuscallback:
+                statuscallback(f"Buckle-vision start fout: {e}")
+
+    def stop_buckle_vision(self, statuscallback=None):
+        if self.vision_proc is not None:
+            try:
+                # Eerst vriendelijk
+                if self.vision_proc.poll() is None:
+                    try:
+                        os.killpg(self.vision_proc.pid, signal.SIGTERM)
+                    except Exception:
+                        self.vision_proc.terminate()
+                    try:
+                        self.vision_proc.wait(timeout=2.0)
+                    except Exception:
+                        # Hard kill als hij nog leeft
+                        try:
+                            os.killpg(self.vision_proc.pid, signal.SIGKILL)
+                        except Exception:
+                            self.vision_proc.kill()
+            except Exception:
+                pass
+            self.vision_proc = None
+            if statuscallback:
+                statuscallback("Buckle-vision gestopt.")
+
 
     def start_status_poller(self, interval: float = 0.1) -> None:
 

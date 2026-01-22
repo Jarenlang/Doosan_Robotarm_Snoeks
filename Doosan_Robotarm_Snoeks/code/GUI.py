@@ -1,14 +1,16 @@
 import os
+import sys
 import threading
 import webbrowser
+import subprocess
 import tkinter as tk
 from PIL import Image
 import customtkinter as ctk
 from sequence import RobotProgram
 from tkinter import messagebox, simpledialog
+from calibrate_buckles import calibrate_pixels
 from database import validate_workorder_exists
 from backend import load_config,DoosanGatewayClient,ROBOT_IP,PORT,is_robot_enabled
-
 
 cfg = load_config()
 Snoeks_Red = cfg.get("Snoeks_Red") or cfg.get("SNOEKS_RED", "#c90000")
@@ -269,6 +271,19 @@ class RobotGUI:
         self.btn_exit.grid(row=1, column=0, padx=5, pady=5, sticky="ew")
         ToolTip(self.btn_exit, "Sluit de applicatie.")
 
+        self.btn_calib = ctk.CTkButton(
+            ctrl_frame,
+            text="Calibreer buckles",
+            command=self.on_calibrate_buckles,
+            fg_color=Snoeks_Red,
+            hover_color="#ff3333",
+            text_color="white",
+            corner_radius=50,
+            width=btn_width,
+        )
+        self.btn_calib.grid(row=1, column=2, padx=5, pady=5, sticky="ew")
+        ToolTip(self.btn_calib, "Start de buckle-calibratiecamera.")
+
         ctk.CTkLabel(
             ctrl_frame, text="Sequence", text_color=Snoeks_Text
         ).grid(row=3, column=0, sticky="w", padx=(10, 0))
@@ -289,7 +304,7 @@ class RobotGUI:
 
         self.seq_combo = ctk.CTkComboBox(
             ctrl_frame,
-            values=["1", "2", "3"],
+            values=["1", "2", "3", "4"],
             variable=self.seq_choice,
             command=on_sequence_changed,
             width=80,
@@ -302,7 +317,7 @@ class RobotGUI:
             state="readonly",
         )
         self.seq_combo.grid(row=3, column=0, sticky="w", padx=(5, 0))
-        self.seq_combo.set("1")
+        self.seq_combo.set("0")
 
         self.seq_state_var = tk.StringVar(value="")
         self.seq_state_label = ctk.CTkLabel(
@@ -612,7 +627,7 @@ class RobotGUI:
             if self._is_connection_lost_error(e):
                 self._set_disconnected_state(str(e))
 
-        self.root.after(5, self._update_status_from_robot)
+        self.root.after(1000, self._update_status_from_robot)
 
     def on_apply_params(self):
         try:
@@ -659,7 +674,7 @@ class RobotGUI:
             return
 
         choice = self.seq_choice.get().strip()
-        if choice not in ("1", "2", "3"):
+        if choice not in ("1", "2", "3", "4"):
             messagebox.showerror(
                 "Sequence-fout", f"Onbekende sequence-keuze: {choice}"
             )
@@ -678,6 +693,10 @@ class RobotGUI:
             self.program.do_armrests = True
         elif choice == "3":
             self.program.do_seatbelts = True
+        elif choice == "4":
+            self.program.do_seatbelts = True
+            self.program.do_buckles = True
+            self.program.do_armrests = True
 
         self.append_status(
             f"Sequence-selectie: {choice}, "
@@ -738,6 +757,18 @@ class RobotGUI:
             self.append_status(f"Home fout: {e}")
             if self._is_connection_lost_error(e):
                 self._set_disconnected_state(str(e))
+
+    def on_calibrate_buckles(self):
+        if not self._check_robot_enabled_or_warn():
+            return
+        try:
+            basedir = os.path.dirname(os.path.abspath(__file__))
+            script = os.path.join(basedir, "calibrate_buckles.py")
+            subprocess.run([sys.executable, script], check=True)
+            self.append_status("Buckle-calibratie voltooid.")
+        except Exception as e:
+            messagebox.showerror("Calibratie-fout", str(e))
+            self.append_status(f"Calibratie-fout: {e}")
 
     # IO helpers
     def _on_do_toggled(self, index: int, var: ctk.IntVar):

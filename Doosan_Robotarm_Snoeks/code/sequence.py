@@ -1,5 +1,5 @@
 import time
-from backend import (load_config, save_config, load_coordinates, DoosanGatewayClient, is_robot_enabled, sensor_amovel, scan_and_validate_single)
+from backend import load_config, save_config, load_coordinates, DoosanGatewayClient, is_robot_enabled, sensor_amovel, scan_and_validate_single, move_to_detected_buckle
 
 class RobotProgram:
     def __init__(self, gateway: DoosanGatewayClient):
@@ -61,10 +61,226 @@ class RobotProgram:
             if statuscallback:
                 statuscallback(msg)
 
-        scan_and_validate_single(self, "buckles", statuscallback)
+        self.gateway.start_buckle_vision(statuscallback)
+        self.gateway.set_digital_output(1, 0)
+
+        log("voor buckles")
+        self.gateway.amovej(*self.pj_voor_buckle, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
         if self._stop_flag:
+            log("Sequence gestopt")
             return
 
+        move_to_detected_buckle(
+            self.gateway,
+            self.velx,
+            self.accx,
+            statuscallback=statuscallback,
+            timeout=15.0,
+            stopflag_getter=lambda: self._stop_flag,
+        )
+
+        log("naar pre home")
+        self.gateway.amovej(*self.pj_pre_home, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        log("naar home")
+        self.gateway.amovej(*self.pj_home, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        log("naar tussenstop")
+        self.gateway.amovej(*self.pj_buckle1_tussenstop, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        log("naar voor frame")
+        self.gateway.amovel(*self.p_buckle1_voor_frame, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        log("naar in frame")
+        self.gateway.amovel(*self.p_buckle1_in_frame, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        self.gateway.set_digital_output(1, 0)
+
+        log("naar off buckle")
+        self.gateway.amovel(*self.p_buckle1_off_buckle, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        log("naar tussenstop")
+        self.gateway.amovel(*self.p_buckle1_out_frame, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        log("naar tussenstop")
+        self.gateway.amovel(*self.p_buckle1_out_frame, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        log("naar home")
+        self.gateway.amovej(*self.pj_home, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        log("voor buckles")
+        self.gateway.amovej(*self.pj_voor_buckle, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        move_to_detected_buckle(
+            self.gateway,
+            self.velx,
+            self.accx,
+            statuscallback=statuscallback,
+            timeout=15.0,
+            stopflag_getter=lambda: self._stop_flag,
+        )
+
+        log("naar home")
+        self.gateway.amovej(*self.pj_home, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        log("naar voor frame 2")
+        self.gateway.amovej(*self.pj_buckle2_voor_frame, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        log("naar in frame 2")
+        self.gateway.amovel(*self.p_buckle2_in_frame, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        log("naar down frame 2")
+        self.gateway.amovel(*self.p_buckle2_down_frame, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        self.gateway.set_digital_output(1,0)
+
+        log("naar off buckle")
+        self.gateway.amovel(*self.p_buckle2_off_buckle, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        log("naar tussenstop")
+        self.gateway.amovej(*self.pj_buckle2_out_frame, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        log("naar voor frame 2")
+        self.gateway.amovej(*self.pj_home, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        log("voor buckles")
+        self.gateway.amovej(*self.pj_voor_buckle, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        move_to_detected_buckle(
+            self.gateway,
+            self.velx,
+            self.accx,
+            statuscallback=statuscallback,
+            timeout=15.0,
+            stopflag_getter=lambda: self._stop_flag,
+        )
+
+        self.gateway.stop_buckle_vision(statuscallback)
+
+        log("naar tussenstop 3")
+        self.gateway.amovej(*self.pj_buckle3_tussenstop, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        log("naar voor frame 3")
+        self.gateway.amovel(*self.p_buckle3_voor_frame, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        log("naar in frame 3")
+        self.gateway.amovel(*self.p_buckle3_in_frame, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        self.gateway.set_digital_output(1,0)
+
+        log("naar off buckle 3")
+        self.gateway.amovel(*self.p_buckle3_off_buckle, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+
+        log("naar out frame 3")
+        self.gateway.amovel(*self.p_buckle3_out_frame, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        log("naar tussenstop terug")
+        self.gateway.amovej(*self.pj_buckle3_tussenstop_terug, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
+
+        log("naar home")
+        self.gateway.amovej(*self.pj_home, self.velx, self.accx)
+        self.gateway.wait_until_stopped()
+        if self._stop_flag:
+            log("Sequence gestopt")
+            return
 
     def sequence_armrest(self, statuscallback=None):
         def log(msg: str):
@@ -77,6 +293,7 @@ class RobotProgram:
 
             if buffer_vol:
                 log("Buffer filled")
+                self.wait_for_operator_confirm(statuscallback)
                 break
 
             self.gateway.set_digital_output(4, 1)
@@ -84,7 +301,6 @@ class RobotProgram:
             self.gateway.set_digital_output(4, 0)
             time.sleep(0.1)
 
-        self.wait_for_operator_confirm(statuscallback)
         self.gateway.set_digital_output(4, 0)
 
         # 1) Naar home
@@ -230,23 +446,6 @@ class RobotProgram:
 
         self.gateway.set_digital_output(1, 0)
 
-        # Seatbelt buffer, vooraf gaand aan het proces wordt gekeken of de buffer vol is.
-        buffer_leeg_seatbelt_1 = self.gateway.get_digital_input(9)
-        buffer_leeg_seatbelt_2 = self.gateway.get_digital_input(10)
-        buffer_leeg_seatbelt_3 = self.gateway.get_digital_input(11)
-
-        if buffer_leeg_seatbelt_1 and buffer_leeg_seatbelt_2 and buffer_leeg_seatbelt_3:
-            log("Buffer seatbelt full")
-
-        if not buffer_leeg_seatbelt_1 or not buffer_leeg_seatbelt_2 or not buffer_leeg_seatbelt_3:
-            self.gateway.set_digital_output(16, 1)
-            log("All seatbelt buffers are empty")
-            self.wait_for_operator_confirm(statuscallback)
-
-        scan_and_validate_single(self, "seatbelts", statuscallback)
-
-        self.gateway.set_digital_output(16, 0)
-
         log("home")
         self.gateway.amovej(*self.pj_home, self.velx, self.accx)
         self.gateway.wait_until_stopped()
@@ -286,13 +485,6 @@ class RobotProgram:
 
         log("passthrough")
         self.gateway.amovej(*self.pj_seatbelt_passthrough, self.velx, self.accx)
-        self.gateway.wait_until_stopped()
-        if self._stop_flag:
-            log("Sequence gestopt")
-            return
-
-        log("doorframe")
-        self.gateway.amovel(*self.p_seatbelt_doorframe, self.velx, self.accx)
         self.gateway.wait_until_stopped()
         if self._stop_flag:
             log("Sequence gestopt")
@@ -367,13 +559,6 @@ class RobotProgram:
 
         log("2 passthrough")
         self.gateway.amovej(*self.pj_seatbelt2_passthrough, self.velx, self.accx)
-        self.gateway.wait_until_stopped()
-        if self._stop_flag:
-            log("Sequence gestopt")
-            return
-
-        log("doorframe")
-        self.gateway.amovel(*self.p_seatbelt2_doorframe, self.velx, self.accx)
         self.gateway.wait_until_stopped()
         if self._stop_flag:
             log("Sequence gestopt")
@@ -460,13 +645,6 @@ class RobotProgram:
             log("Sequence gestopt")
             return
 
-        log("3 half")
-        self.gateway.amovel(*self.p_seatbelt3_half, self.velx, self.accx)
-        self.gateway.wait_until_stopped()
-        if self._stop_flag:
-            log("Sequence gestopt")
-            return
-
         log("3 above")
         self.gateway.amovel(*self.p_seatbelt3_aboveholder, self.velx, self.accx)
         self.gateway.wait_until_stopped()
@@ -520,4 +698,12 @@ class RobotProgram:
 
         # Wachten op operator
         self.wait_for_operator_confirm(statuscallback)
-        self.sequence_armrest(statuscallback)
+
+        if self.do_seatbelts:
+            self.sequence_seatbelts(statuscallback)
+        elif self.do_buckles:
+            self.sequence_buckles(statuscallback)
+        elif self.do_armrests:
+            self.sequence_armrest(statuscallback)
+        else:
+            log("Geen geldig product gekozen uit QR-code, sequence wordt niet uitgevoerd.")
