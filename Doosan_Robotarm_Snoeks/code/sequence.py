@@ -20,6 +20,7 @@ class RobotProgram:
         self.do_seatbelts = False
         self.do_armrests = False
         self.do_buckles = False
+        self.do_everything = False
         self.workorder_id: str | None = None
 
     # ----------------- Basis helpers -----------------
@@ -62,6 +63,7 @@ class RobotProgram:
                 statuscallback(msg)
 
         self.gateway.start_buckle_vision(statuscallback)
+        #scan_and_validate_single(self, "buckles")
         self.gateway.set_digital_output(1, 0)
 
         log("voor buckles")
@@ -424,6 +426,8 @@ class RobotProgram:
             if statuscallback:
                 statuscallback(msg)
 
+        #scan_and_validate_single(self, "seatbelts")
+
         while True:
             try:
                 s13 = self.gateway.get_digital_input(13)
@@ -704,6 +708,10 @@ class RobotProgram:
         elif self.do_buckles:
             self.sequence_buckles(statuscallback)
         elif self.do_armrests:
+            self.sequence_armrest(statuscallback)
+        elif self.do_everything:
+            self.sequence_seatbelts(statuscallback)
+            self.sequence_buckles(statuscallback)
             self.sequence_armrest(statuscallback)
         else:
             log("Geen geldig product gekozen uit QR-code, sequence wordt niet uitgevoerd.")

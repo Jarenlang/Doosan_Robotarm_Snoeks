@@ -294,12 +294,15 @@ class RobotGUI:
             self.program.do_seatbelts = False
             self.program.do_armrests = False
             self.program.do_buckles = False
+            self.program.do_everything = False
             if choice == "1":
                 self.program.do_buckles = True
             elif choice == "2":
                 self.program.do_armrests = True
             elif choice == "3":
                 self.program.do_seatbelts = True
+            elif choice == "4":
+                self.program.do_everything = True
             self.append_status(f"Sequence keuze veranderd naar {choice}.")
 
         self.seq_combo = ctk.CTkComboBox(
@@ -686,6 +689,7 @@ class RobotGUI:
         self.program.do_seatbelts = False
         self.program.do_armrests = False
         self.program.do_buckles = False
+        self.program.do_everything = False
 
         if choice == "1":
             self.program.do_buckles = True
@@ -694,15 +698,14 @@ class RobotGUI:
         elif choice == "3":
             self.program.do_seatbelts = True
         elif choice == "4":
-            self.program.do_seatbelts = True
-            self.program.do_buckles = True
-            self.program.do_armrests = True
+            self.program.do_everything = True
 
         self.append_status(
             f"Sequence-selectie: {choice}, "
             f"seatbelts={self.program.do_seatbelts}, "
-            f"armrests={self.program.do_armrests}, "
             f"buckles={self.program.do_buckles}"
+            f"armrests={self.program.do_armrests}, "
+            f"buckles={self.program.do_everything}"
         )
 
         def run_seq():
@@ -767,10 +770,8 @@ class RobotGUI:
             subprocess.run([sys.executable, script], check=True)
             self.append_status("Buckle-calibratie voltooid.")
         except Exception as e:
-            messagebox.showerror("Calibratie-fout", str(e))
-            self.append_status(f"Calibratie-fout: {e}")
+            messagebox.showerror("Calibratie-fout", "camera is niet verbonden met de laptop, Probeer deze opnieuw aan te sluiten")
 
-    # IO helpers
     def _on_do_toggled(self, index: int, var: ctk.IntVar):
         value = int(var.get())
         try:

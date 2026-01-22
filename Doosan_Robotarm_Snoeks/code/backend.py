@@ -480,7 +480,7 @@ class DoosanGatewayClient:
                 statuscallback("Buckle-vision gestart.")
         except Exception as e:
             if statuscallback:
-                statuscallback(f"Buckle-vision start fout: {e}")
+                statuscallback(f"Buckle-vision start fout.")
 
     def stop_buckle_vision(self, statuscallback=None):
         if self.vision_proc is not None:

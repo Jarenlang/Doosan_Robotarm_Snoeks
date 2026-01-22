@@ -1,7 +1,7 @@
 import cv2
 from pyzbar import pyzbar
 
-webcam_id = 2
+webcam_id = 4
 
 class BarcodeScanError(Exception):
     pass
