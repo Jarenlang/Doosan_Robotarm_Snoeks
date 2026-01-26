@@ -295,7 +295,7 @@ class RobotProgram:
 
             if buffer_vol:
                 log("Buffer filled")
-                self.wait_for_operator_confirm(statuscallback)
+                time.sleep(2)
                 break
 
             self.gateway.set_digital_output(4, 1)

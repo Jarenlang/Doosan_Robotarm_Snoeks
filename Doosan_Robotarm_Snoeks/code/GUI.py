@@ -69,7 +69,7 @@ class RobotGUI:
             img = Image.open(LOGO_PATH)
             self.logo_image = ctk.CTkImage(light_image=img, dark_image=img)
         except Exception as e:
-            print(f"Kon window-icoon/logo niet laden: {e}")
+            print(f"Couldn't load window icon: {e}")
             self.logo_image = None
 
         self.gateway = DoosanGatewayClient()
@@ -133,7 +133,7 @@ class RobotGUI:
         )
         self.btn_connect.grid(row=0, column=2, padx=5)
 
-        ToolTip(self.btn_connect, "Verbind met de robot op het opgegeven IP-adres.")
+        ToolTip(self.btn_connect, "Connect with the robot on given IP-adress.")
 
         # Parameters
         param_frame = ctk.CTkFrame(
@@ -165,7 +165,7 @@ class RobotGUI:
         entry_op_speed.grid(row=1, column=1, sticky="w", padx=(5, 0))
 
         ctk.CTkLabel(
-            param_frame, text="velx", text_color=Snoeks_Text
+            param_frame, text="velocity of TCP", text_color=Snoeks_Text
         ).grid(row=2, column=0, sticky="w", pady=(5, 0))
         entry_velx = ctk.CTkEntry(
             param_frame,
@@ -179,7 +179,7 @@ class RobotGUI:
         entry_velx.grid(row=2, column=1, sticky="w", padx=(5, 0))
 
         ctk.CTkLabel(
-            param_frame, text="accx", text_color=Snoeks_Text
+            param_frame, text="acceleration of TCP", text_color=Snoeks_Text
         ).grid(row=3, column=0, sticky="w", pady=(5, 0))
         entry_accx = ctk.CTkEntry(
             param_frame,
@@ -203,7 +203,7 @@ class RobotGUI:
             width=160,
         )
         self.btn_apply.grid(row=4, column=0, columnspan=3, pady=(10, 0), sticky="w")
-        ToolTip(self.btn_apply, "Stuur de parameters naar de robot en sla ze op.")
+        ToolTip(self.btn_apply, "Send the parameters to the robot and store.")
 
         # Control
         ctrl_frame = ctk.CTkFrame(
@@ -228,7 +228,7 @@ class RobotGUI:
             width=btn_width,
         )
         self.btn_start.grid(row=0, column=0, padx=5, pady=5, sticky="ew")
-        ToolTip(self.btn_start, "Scan QR en start de sequence na operatorbevestiging.")
+        ToolTip(self.btn_start, "Scan QR and start the sequence after operator conformation.")
 
         self.btn_stop = ctk.CTkButton(
             ctrl_frame,
@@ -242,7 +242,7 @@ class RobotGUI:
             width=btn_width,
         )
         self.btn_stop.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
-        ToolTip(self.btn_stop, "Vraag een stop van de huidige sequence aan.")
+        ToolTip(self.btn_stop, "Stop the current sequence.")
 
         self.btn_home = ctk.CTkButton(
             ctrl_frame,
@@ -256,7 +256,7 @@ class RobotGUI:
             width=btn_width,
         )
         self.btn_home.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
-        ToolTip(self.btn_home, "Beweeg de robot naar de HOME-positie.")
+        ToolTip(self.btn_home, "Move the robot to the home position.")
 
         self.btn_exit = ctk.CTkButton(
             ctrl_frame,
@@ -269,11 +269,11 @@ class RobotGUI:
             width=btn_width,
         )
         self.btn_exit.grid(row=1, column=0, padx=5, pady=5, sticky="ew")
-        ToolTip(self.btn_exit, "Sluit de applicatie.")
+        ToolTip(self.btn_exit, "Close the application.")
 
         self.btn_calib = ctk.CTkButton(
             ctrl_frame,
-            text="Calibreer buckles",
+            text="Calibrate buckles",
             command=self.on_calibrate_buckles,
             fg_color=Snoeks_Red,
             hover_color="#ff3333",
@@ -282,7 +282,7 @@ class RobotGUI:
             width=btn_width,
         )
         self.btn_calib.grid(row=1, column=2, padx=5, pady=5, sticky="ew")
-        ToolTip(self.btn_calib, "Start de buckle-calibratiecamera.")
+        ToolTip(self.btn_calib, "Start the buckle calibration camera.")
 
         ctk.CTkLabel(
             ctrl_frame, text="Sequence", text_color=Snoeks_Text
@@ -297,13 +297,19 @@ class RobotGUI:
             self.program.do_everything = False
             if choice == "1":
                 self.program.do_buckles = True
+                label = "Buckles"
             elif choice == "2":
                 self.program.do_armrests = True
+                label = "Armrests"
             elif choice == "3":
                 self.program.do_seatbelts = True
+                label = "Seatbelts"
             elif choice == "4":
                 self.program.do_everything = True
-            self.append_status(f"Sequence keuze veranderd naar {choice}.")
+                label = "Complete sequence"
+            else:
+                label = f"Unknown ({choice})"
+            self.append_status(f"Sequence choice changed to {label}.")
 
         self.seq_combo = ctk.CTkComboBox(
             ctrl_frame,
@@ -340,7 +346,7 @@ class RobotGUI:
         )
         io_frame.pack(fill="x", padx=0, pady=(0, 10))
 
-        ctk.CTkLabel(io_frame, text="Digital IO", text_color=Snoeks_Text).grid(
+        ctk.CTkLabel(io_frame, text="Digital Input Output", text_color=Snoeks_Text).grid(
             row=0, column=0, columnspan=18, sticky="w", padx=5, pady=(5, 5)
         )
 
@@ -398,7 +404,7 @@ class RobotGUI:
 
         self.btn_all_off = ctk.CTkButton(
             quick_frame,
-            text="All DO off",
+            text="All Digital Out off",
             command=self._all_do_off,
             fg_color="#444444",
             hover_color="#666666",
@@ -407,18 +413,6 @@ class RobotGUI:
             width=110,
         )
         self.btn_all_off.pack(side="left", padx=(0, 5))
-
-        self.btn_reset_lamps = ctk.CTkButton(
-            quick_frame,
-            text="Reset lamps",
-            command=self._reset_lamps,
-            fg_color="#444444",
-            hover_color="#666666",
-            text_color="white",
-            corner_radius=16,
-            width=110,
-        )
-        self.btn_reset_lamps.pack(side="left", padx=(0, 5))
 
         # Force / TCP
         force_frame = ctk.CTkFrame(
@@ -485,7 +479,7 @@ class RobotGUI:
 
         self.chk_errors = ctk.CTkCheckBox(
             filter_frame,
-            text="Toon alleen fouten",
+            text="Only show errors",
             variable=self.var_filter_errors,
             onvalue=True,
             offvalue=False,
@@ -495,7 +489,7 @@ class RobotGUI:
 
         self.chk_seq = ctk.CTkCheckBox(
             filter_frame,
-            text="Toon alleen sequence-status",
+            text="only show sequence state",
             variable=self.var_filter_seq,
             onvalue=True,
             offvalue=False,
@@ -503,7 +497,7 @@ class RobotGUI:
         )
         self.chk_seq.pack(side="left", padx=(0, 10))
 
-        self.append_status("Klaar. Verbind met de robot.")
+        self.append_status("Ready. Connect with the robot.")
 
         self.root.protocol("WM_DELETE_WINDOW", self.on_exit)
         self.root.bind_all("<Control-Alt-r>", self._on_rickroll)
@@ -517,7 +511,7 @@ class RobotGUI:
             and self.var_filter_errors.get()
         ):
             lower = msg.lower()
-            if not any(w in lower for w in ("fout", "error", "verbroken")):
+            if not any(w in lower for w in ("fout", "error", "disconnected", "verbroken")):
                 return
 
         if (
@@ -542,9 +536,9 @@ class RobotGUI:
             pass
 
         if reason:
-            self.append_status(f"Verbinding verbroken: {reason}")
+            self.append_status(f"Connection lost: {reason}")
         else:
-            self.append_status("Verbinding verbroken.")
+            self.append_status("Connection lost.")
 
         self.btn_start.configure(state="disabled")
         self.btn_stop.configure(state="disabled")
@@ -558,7 +552,7 @@ class RobotGUI:
 
         self.gateway = DoosanGatewayClient()
         self.program = RobotProgram(self.gateway)
-        self.append_status("Klaar. Verbind opnieuw met de robot.")
+        self.append_status("Ready. Reconnect with the robot.")
 
     def _is_connection_lost_error(self, e: Exception) -> bool:
         msg = str(e)
@@ -587,7 +581,7 @@ class RobotGUI:
                     try:
                         self.gateway.start_status_poller(interval=0.2)
                         self.append_status(
-                            f"Verbonden met {self.gateway.ip}:{PORT}"
+                            f"Connected through {self.gateway.ip}:{PORT}"
                         )
                         self.btn_start.configure(state="normal")
                         self.btn_stop.configure(state="normal")
@@ -640,20 +634,20 @@ class RobotGUI:
             if self.gateway.sock is not None:
                 self.program.apply_parameters()
             self.program.save_parameters_to_config()
-            self.append_status("Parameters toegepast en/of opgeslagen.")
+            self.append_status("Parameters applied and stored.")
         except Exception as e:
             messagebox.showerror("Param error", str(e))
 
     def ask_and_validate_workorder(self) -> bool:
         workorder = simpledialog.askstring(
-            "Workorder invoer",
-            "Voer de WORKORDERBASEID in:",
+            "Give an work order",
+            "Put in  WORK ORDER BASE ID:",
             parent=self.root,
         )
         if not workorder:
             messagebox.showerror(
-                "Workorder",
-                "Workorder niet ingevuld of geannuleerd.",
+                "Work order",
+                "Work order failed or not filled in.",
             )
             return False
 
@@ -661,16 +655,16 @@ class RobotGUI:
         try:
             validate_workorder_exists(workorder)
         except Exception as e:
-            messagebox.showerror("Workorder-fout", str(e))
+            messagebox.showerror("Work order-error", str(e))
             return False
 
         self.program.workorder_id = workorder
-        self.append_status(f"Workorder geselecteerd: {workorder}")
+        self.append_status(f"Work order selected: {workorder}")
         return True
 
     def on_start_sequence(self):
         if self.sequence_thread and self.sequence_thread.is_alive():
-            messagebox.showinfo("Info", "Sequence is al bezig.")
+            messagebox.showinfo("Info", "Sequence already running.")
             return
 
         if not self._check_robot_enabled_or_warn():
@@ -679,7 +673,7 @@ class RobotGUI:
         choice = self.seq_choice.get().strip()
         if choice not in ("1", "2", "3", "4"):
             messagebox.showerror(
-                "Sequence-fout", f"Onbekende sequence-keuze: {choice}"
+                "Sequence error", f"unknown sequence choice: {choice}"
             )
             return
 
@@ -701,7 +695,7 @@ class RobotGUI:
             self.program.do_everything = True
 
         self.append_status(
-            f"Sequence-selectie: {choice}, "
+            f"Sequence selection: {choice}, "
             f"seatbelts={self.program.do_seatbelts}, "
             f"buckles={self.program.do_buckles}"
             f"armrests={self.program.do_armrests}, "
@@ -713,10 +707,10 @@ class RobotGUI:
                 self.append_status("Sequence start...")
                 self.seq_state_var.set("Sequence running")
                 self.program.sequence_pick_and_place(self.append_status)
-                self.append_status("Sequence klaar.")
+                self.append_status("Sequence done.")
                 self.seq_state_var.set("Sequence done")
             except Exception as e:
-                self.append_status(f"Fout in sequence: {e}")
+                self.append_status(f"error in sequence: {e}")
                 self.seq_state_var.set("Sequence error")
                 if self._is_connection_lost_error(e):
                     self.root.after(
@@ -732,11 +726,11 @@ class RobotGUI:
 
     def on_stop(self):
         try:
-            self.append_status("Stop gestart.")
+            self.append_status("Stop started.")
             self.program._stop_flag = True
             self.gateway.stop()
         except Exception as e:
-            self.append_status(f"Stop fout: {e}")
+            self.append_status(f"Stop error: {e}")
             if self.gateway.sock is None:
                 self._set_disconnected_state(str(e))
 
@@ -748,16 +742,16 @@ class RobotGUI:
             return
         try:
             self.program.apply_parameters()
-            self.append_status("Home-beweging gestart...")
+            self.append_status("Home-movement started...")
             self.gateway.amovej(
                 *self.program.pj_home,
                 self.program.velx,
                 self.program.accx,
             )
             self.gateway.wait_until_stopped()
-            self.append_status("Home-beweging klaar.")
+            self.append_status("Home-movement done.")
         except Exception as e:
-            self.append_status(f"Home fout: {e}")
+            self.append_status(f"Home error: {e}")
             if self._is_connection_lost_error(e):
                 self._set_disconnected_state(str(e))
 
@@ -768,35 +762,35 @@ class RobotGUI:
             basedir = os.path.dirname(os.path.abspath(__file__))
             script = os.path.join(basedir, "calibrate_buckles.py")
             subprocess.run([sys.executable, script], check=True)
-            self.append_status("Buckle-calibratie voltooid.")
+            self.append_status("Buckle-calibration done.")
         except Exception as e:
-            messagebox.showerror("Calibratie-fout", "camera is niet verbonden met de laptop, Probeer deze opnieuw aan te sluiten")
+            messagebox.showerror("Calibration error", "camera not connected, try reconnecting the USB.")
 
     def _on_do_toggled(self, index: int, var: ctk.IntVar):
         value = int(var.get())
         try:
             if self.gateway.sock is None:
-                self.append_status("Kan DO niet zetten: niet verbonden.")
+                self.append_status("Can't set DO, robot not connected.")
                 var.set(0)
                 return
             self.gateway.set_digital_output(index, value)
             self.append_status(f"DO{index} -> {value}")
         except Exception as e:
-            self.append_status(f"DO{index} fout: {e}")
+            self.append_status(f"DO{index} error: {e}")
             if self._is_connection_lost_error(e):
                 self._set_disconnected_state(str(e))
 
     def _all_do_off(self):
         if self.gateway.sock is None:
-            self.append_status("Kan DO niet resetten: niet verbonden.")
+            self.append_status("Can't reset DO, robot not connected.")
             return
         try:
             for i, var in enumerate(self.do_vars, start=1):
                 self.gateway.set_digital_output(i, 0)
                 var.set(0)
-            self.append_status("Alle DO-uitgangen zijn uit gezet.")
+            self.append_status("All DO turned off.")
         except Exception as e:
-            self.append_status(f"All DO off fout: {e}")
+            self.append_status(f"All DO turned off error: {e}")
             if self._is_connection_lost_error(e):
                 self._set_disconnected_state(str(e))
 
